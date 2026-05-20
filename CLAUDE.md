@@ -237,6 +237,92 @@ No runtime theme switching (by design)
 No cross-game data sharing (by design)
 No master hub site (separate concern — build one later if you want to market the games together)
 
+4. Game logic
+Game state shape
+typescripttype Player = {
+  id: 1 | 2;
+  name: string;
+  avatarId: string;
+  score: number;          // number of matched pairs found
+};
+
+type Card = {
+  id: string;             // matches CardContent.id
+  uid: string;            // unique per card instance (since pairs share id)
+  isFlipped: boolean;
+  isMatched: boolean;
+  position: number;       // 0-indexed position on the board
+};
+
+type GameState = {
+  mode: '1p' | '2p';
+  players: Player[];
+  activePlayerId: 1 | 2;
+  deckId: string;         // which deck back design is in use
+  difficulty: 12 | 18 | 24 | 30;  // number of pairs
+  board: Card[];
+  flippedCards: Card[];   // 0, 1, or 2 cards currently face-up and unresolved
+  matchedThisTurn: Card[];// for the modal queue
+  timer: number;          // seconds elapsed
+  flips: number;          // total flips this game
+  status: 'idle' | 'playing' | 'paused' | 'won';
+  showingMatchModal: CardContent | null;
+};
+Game flow
+
+Setup: player(s) choose name, avatar, deck, difficulty. State is initialized.
+Deal: select N unique cards from cards.ts (where N = difficulty), duplicate each to make pairs, shuffle, place on board.
+Turn loop:
+
+Player taps a face-down card → it flips, added to flippedCards
+Player taps a second face-down card → it flips, added to flippedCards
+System checks match:
+
+Match: both cards' isMatched = true, score++ for active player, show match modal with card content, when modal closes the active player gets another turn (in 2P)
+No match: wait 1.2s, flip both back, switch to other player (in 2P)
+
+
+In 1P mode: turn never "switches" — same player plays until done. Flip counter and timer still tick.
+
+
+Win condition: all cards matched. Show results screen with stats and (in 2P) the winner.
+
+Match modal behavior
+
+Appears immediately after a successful match, before flipping cards face-down (in a match, they stay face-up matched)
+Contains: card image, card name, blurb, continue button
+Auto-dismisses after 4 seconds (long enough to read, short enough not to interrupt flow)
+Tap anywhere on the modal to dismiss faster (not just the Continue button)
+During modal display, the timer pauses (educational reading shouldn't count against time)
+If 2P, the game tracks that the matching player gets another turn AFTER modal dismisses
+
+Scoring
+
+1P: track time, total flips, matches found, best streak (consecutive matches without a miss). Show 1–3 stars on results based on flip efficiency relative to a perfect run.
+
+3 stars: ≤ 1.5× perfect (perfect = 2 flips per pair)
+2 stars: ≤ 2× perfect
+1 star: completed the game
+
+
+2P: track matches per player. Winner = most matches. Tie possible.
+
+Pause behavior
+
+Pause button on the gameplay screen freezes the timer
+Pause modal shows: Resume, Restart, Quit to Menu
+Currently flipped cards stay flipped during pause (no peeking exploit — they were already visible)
+
+Persistence
+The following are saved to localStorage and restored on return visits:
+
+Player names (last used)
+Last selected avatars (one per player slot)
+Last selected deck
+Last selected difficulty
+Sound on/off preference
+In-progress game: if a player quits mid-game, "Continue last game" appears on the splash screen on their next visit
+
 5. Design system
 Visual language principle
 The illustrations are not just content — they set the entire visual register. The UI must feel like the frame around fine art, not the wrapper around a digital app. Think: a beautifully illustrated children's book, a quality festival poster, a miniature painting with hand-lettered margins. Every UI decision should ask: "Would this feel at home next to the artwork?" If the answer is no, the UI is wrong.
