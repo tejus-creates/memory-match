@@ -96,7 +96,12 @@
 /* ─── Base styles ─── */
 
 body {
-  background: var(--bg-base);
+  /* TODO: replace with Holi powder background image */
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(200, 75, 31, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 30%, rgba(216, 154, 44, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 80%, rgba(31, 74, 92, 0.18) 0%, transparent 60%),
+    var(--bg-base);
   color: var(--text-primary-light);
   font-family: var(--font-body);
   font-size: var(--text-base);
