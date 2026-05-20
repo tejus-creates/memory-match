@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
-/* ─── Core palette — sampled from the Holi illustrations ─── */
+/* ─── Core palette — vibrant Holi powder ─── */
 
 :root {
-  --c-sindoor: #C84B1F;
-  --c-sindoor-dark: #7A1F2A;
-  --c-marigold: #D89A2C;
-  --c-peacock: #1F4A5C;
+  --c-magenta: #EE1F6F;
+  --c-magenta-dark: #BC1656;
+  --c-sindoor: #F44E18;
+  --c-sindoor-dark: #BC3410;
+  --c-marigold: #FFBE1A;
+  --c-peacock: #0E9BB5;
   --c-parchment: #F4E8D0;
 
   --c-maroon: #7A1F2A;
-  --c-teal: #2E6B5F;
-  --c-brass: #B8966A;
+  --c-teal: #2E8B73;
+  --c-brass: #C9A876;
   --c-ink: #2A1810;
 
   /* ─── Functional tokens ─── */
@@ -27,11 +29,11 @@
   --text-primary-dark: #2A1810;
   --text-secondary-light: rgba(244, 232, 208, 0.7);
   --text-secondary-dark: rgba(42, 24, 16, 0.65);
-  --text-accent: #D89A2C;
+  --text-accent: #F44E18;
 
   --border-default: #B8966A;
   --border-thin: rgba(184, 150, 106, 0.4);
-  --border-active: #D89A2C;
+  --border-active: #F44E18;
 
   --success: #2E6B5F;
   --error: #7A1F2A;
@@ -72,7 +74,7 @@
 
   /* ─── Shadows (only these three) ─── */
 
-  --shadow-button: 0 2px 0 var(--c-sindoor-dark);
+  --shadow-button: 0 2px 0 var(--c-magenta-dark);
   --shadow-modal: 0 8px 24px rgba(42, 24, 16, 0.4);
   --shadow-focus: 0 0 0 3px rgba(216, 154, 44, 0.4);
 }
@@ -82,6 +84,8 @@
 @theme inline {
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --color-magenta: var(--c-magenta);
+  --color-magenta-dark: var(--c-magenta-dark);
   --color-sindoor: var(--c-sindoor);
   --color-sindoor-dark: var(--c-sindoor-dark);
   --color-marigold: var(--c-marigold);
