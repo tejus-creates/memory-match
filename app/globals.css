@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* ─── Core palette — sampled from the Holi illustrations ─── */
+
+:root {
+  --c-sindoor: #C84B1F;
+  --c-sindoor-dark: #7A1F2A;
+  --c-marigold: #D89A2C;
+  --c-peacock: #1F4A5C;
+  --c-parchment: #F4E8D0;
+
+  --c-maroon: #7A1F2A;
+  --c-teal: #2E6B5F;
+  --c-brass: #B8966A;
+  --c-ink: #2A1810;
+
+  /* ─── Functional tokens ─── */
+
+  --bg-base: #2A1810;
+  --bg-overlay: rgba(31, 74, 92, 0.3);
+  --surface-parchment: #F4E8D0;
+  --surface-card: #F4E8D0;
+  --surface-card-back: #1F4A5C;
+  --surface-overlay: rgba(42, 24, 16, 0.4);
+
+  --text-primary-light: #F4E8D0;
+  --text-primary-dark: #2A1810;
+  --text-secondary-light: rgba(244, 232, 208, 0.7);
+  --text-secondary-dark: rgba(42, 24, 16, 0.65);
+  --text-accent: #D89A2C;
+
+  --border-default: #B8966A;
+  --border-thin: rgba(184, 150, 106, 0.4);
+  --border-active: #D89A2C;
+
+  --success: #2E6B5F;
+  --error: #7A1F2A;
+
+  /* ─── Typography ─── */
+
+  --font-display: "Alice", Georgia, "Times New Roman", serif;
+  --font-body: "Andika", system-ui, -apple-system, sans-serif;
+
+  /* ─── Type scale ─── */
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 17px;
+  --text-lg: 24px;
+  --text-xl: 34px;
+  --text-2xl: 48px;
+
+  /* ─── Spacing (4px base) ─── */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-14: 56px;
+  --space-20: 80px;
+
+  /* ─── Radii ─── */
+
+  --radius-button: 8px;
+  --radius-card: 10px;
+  --radius-modal: 12px;
+
+  /* ─── Shadows (only these three) ─── */
+
+  --shadow-button: 0 2px 0 var(--c-sindoor-dark);
+  --shadow-modal: 0 8px 24px rgba(42, 24, 16, 0.4);
+  --shadow-focus: 0 0 0 3px rgba(216, 154, 44, 0.4);
+}
+
+/* ─── Tailwind theme bridge ─── */
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --color-sindoor: var(--c-sindoor);
+  --color-sindoor-dark: var(--c-sindoor-dark);
+  --color-marigold: var(--c-marigold);
+  --color-peacock: var(--c-peacock);
+  --color-parchment: var(--c-parchment);
+  --color-maroon: var(--c-maroon);
+  --color-teal: var(--c-teal);
+  --color-brass: var(--c-brass);
+  --color-ink: var(--c-ink);
+}
+
+/* ─── Base styles ─── */
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary-light);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+}
+
+/* ─── Focus ring (marigold) ─── */
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
