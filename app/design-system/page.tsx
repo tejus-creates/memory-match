@@ -1,9 +1,32 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { DisplayHeading } from "@/components/ui/DisplayHeading";
+import { Input } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
+import { Avatar } from "@/components/ui/Avatar";
+
+/* ─── Placeholder avatar data (inline SVG data URIs) ─── */
+
+const PLACEHOLDER_AVATARS = [
+  { id: "flame", name: "Flame", color: "EE1F6F", initial: "F" },
+  { id: "water", name: "Water Drop", color: "0E9BB5", initial: "W" },
+  { id: "lotus", name: "Lotus", color: "2E8B73", initial: "L" },
+  { id: "peacock", name: "Peacock", color: "F44E18", initial: "P" },
+].map((a) => ({
+  ...a,
+  src: `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="#${a.color}"/><text x="32" y="32" text-anchor="middle" dominant-baseline="central" font-family="Georgia,serif" font-size="28" font-weight="bold" fill="#F4E8D0">${a.initial}</text></svg>`,
+  )}`,
+}));
 
 export default function DesignSystemPage() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState("flame");
+
   return (
     <main className="mx-auto max-w-[960px] px-[var(--space-4)] py-[var(--space-10)] sm:px-[var(--space-6)]">
       {/* ─── Page title ─── */}
@@ -196,6 +219,90 @@ export default function DesignSystemPage() {
           <DisplayHeading size="xl" underline>Major Title with underline</DisplayHeading>
           <DisplayHeading size="2xl" as="h1">Splash Title (2xl)</DisplayHeading>
           <DisplayHeading size="2xl" as="h1" underline>Splash Title with underline</DisplayHeading>
+        </div>
+      </Section>
+      {/* ═══════════════════════════════════════════
+          INPUTS
+          ═══════════════════════════════════════════ */}
+
+      <Section title="Inputs">
+        <div className="rounded-[var(--radius-modal)] bg-[var(--surface-parchment)] p-[var(--space-6)]">
+          <div className="flex flex-col gap-[var(--space-6)] max-w-[320px]">
+            <div>
+              <p className="mb-[var(--space-2)] font-body text-[length:var(--text-sm)] text-[var(--text-primary-dark)]">
+                With placeholder
+              </p>
+              <Input placeholder="Enter your name" maxLength={20} />
+            </div>
+            <div>
+              <p className="mb-[var(--space-2)] font-body text-[length:var(--text-sm)] text-[var(--text-primary-dark)]">
+                Filled (select-all on focus)
+              </p>
+              <Input defaultValue="Arjun" maxLength={20} />
+            </div>
+            <div>
+              <p className="mb-[var(--space-2)] font-body text-[length:var(--text-sm)] text-[var(--text-primary-dark)]">
+                Disabled
+              </p>
+              <Input placeholder="Not available" disabled />
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ═══════════════════════════════════════════
+          MODAL
+          ═══════════════════════════════════════════ */}
+
+      <Section title="Modal">
+        <div className="flex flex-wrap gap-[var(--space-4)]">
+          <Button onClick={() => setModalOpen(true)}>Open Modal</Button>
+        </div>
+        <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} ariaLabel="Example modal">
+          <div className="flex flex-col gap-[var(--space-4)]">
+            <EyebrowLabel>Match Found</EyebrowLabel>
+            <DisplayHeading size="lg">Red Gulal</DisplayHeading>
+            <p className="font-body text-[length:var(--text-base)] leading-[1.6]" style={{ color: "rgba(42, 24, 16, 0.85)" }}>
+              Gulal is the traditional colored powder thrown during Holi. Red symbolizes creative energy and passion.
+            </p>
+          </div>
+        </Modal>
+      </Section>
+
+      {/* ═══════════════════════════════════════════
+          AVATARS
+          ═══════════════════════════════════════════ */}
+
+      <Section title="Avatars">
+        <div className="flex flex-col gap-[var(--space-6)]">
+          {/* Selectable avatars (default 64px) */}
+          <div>
+            <p className="mb-[var(--space-3)] font-body text-[length:var(--text-sm)] text-[var(--text-secondary-light)]">
+              Selectable (64px) — click to select
+            </p>
+            <div className="flex flex-wrap items-center gap-[var(--space-4)]">
+              {PLACEHOLDER_AVATARS.map((a) => (
+                <Avatar
+                  key={a.id}
+                  src={a.src}
+                  name={a.name}
+                  selected={selectedAvatar === a.id}
+                  onClick={() => setSelectedAvatar(a.id)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Small display-only avatars (44px) */}
+          <div>
+            <p className="mb-[var(--space-3)] font-body text-[length:var(--text-sm)] text-[var(--text-secondary-light)]">
+              Display-only (44px)
+            </p>
+            <div className="flex flex-wrap items-center gap-[var(--space-3)]">
+              <Avatar src={PLACEHOLDER_AVATARS[0].src} name={PLACEHOLDER_AVATARS[0].name} size={44} />
+              <Avatar src={PLACEHOLDER_AVATARS[2].src} name={PLACEHOLDER_AVATARS[2].name} size={44} />
+            </div>
+          </div>
         </div>
       </Section>
     </main>
