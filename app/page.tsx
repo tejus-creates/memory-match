@@ -41,20 +41,18 @@ export default function SplashPage() {
       {/* ── Top spacer ── */}
       <div className="flex-1" />
 
-      {/* ── Title + buttons ── */}
-      <div className="flex flex-col items-center gap-[var(--space-10)]" style={{ maxWidth: 600, width: "100%" }}>
-        {/* Title graphic */}
-        <div className="w-full max-w-[min(560px,85vw)]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/branding/vibrant_holi_memories_title.png"
-            alt="Vibrant Holi Memories"
-            className="w-full h-auto"
-          />
-        </div>
+      {/* ── Title + buttons + sound toggle ── */}
+      <div className="flex flex-col items-center" style={{ gap: 32, maxWidth: 600, width: "100%" }}>
+        {/* Title graphic — constrain width only, height follows naturally */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/branding/vibrant_holi_memories_title.png"
+          alt="Vibrant Holi Memories"
+          style={{ maxWidth: "min(440px, 80vw)", width: "100%", height: "auto" }}
+        />
 
         {/* Action buttons */}
-        <div className="flex flex-col items-center gap-[var(--space-4)] w-full max-w-[280px]">
+        <div className="flex flex-col items-center w-full" style={{ gap: 16, maxWidth: 280 }}>
           <Link href="/menu" className="w-full" onClick={handlePlay}>
             <Button variant="primary" className="w-full">
               Play
