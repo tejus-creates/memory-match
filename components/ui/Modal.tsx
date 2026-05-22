@@ -9,6 +9,8 @@ interface ModalProps {
   children: ReactNode;
   closeOnOutsideClick?: boolean;
   ariaLabel?: string;
+  maxWidth?: number;
+  shadow?: string;
 }
 
 export function Modal({
@@ -17,6 +19,8 @@ export function Modal({
   children,
   closeOnOutsideClick = true,
   ariaLabel,
+  maxWidth = 480,
+  shadow,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
@@ -134,12 +138,12 @@ export function Modal({
         tabIndex={-1}
         style={{
           width: "90vw",
-          maxWidth: 480,
+          maxWidth,
           borderRadius: "var(--radius-modal)",
           border: "0.5px solid var(--c-ink)",
           backgroundColor: "var(--surface-parchment)",
           padding: "var(--space-6)",
-          boxShadow: "var(--shadow-modal)",
+          boxShadow: shadow ?? "var(--shadow-modal)",
           color: "var(--text-primary-dark)",
           outline: "none",
           opacity: visible ? 1 : 0,

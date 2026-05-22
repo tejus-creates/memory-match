@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "copy-assets": "./scripts/copy-theme-assets.sh",
+    "dev": "npm run copy-assets && next dev",
+    "build": "npm run copy-assets && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

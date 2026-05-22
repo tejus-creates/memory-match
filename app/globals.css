@@ -76,7 +76,15 @@
 
   --shadow-button: 0 2px 0 var(--c-magenta-dark);
   --shadow-modal: 0 8px 24px rgba(42, 24, 16, 0.4);
+  --shadow-modal-celebration: 0 12px 32px rgba(42, 24, 16, 0.45);
+  --shadow-card: 0 2px 6px rgba(42, 24, 16, 0.25);
+  --shadow-card-hover: 0 4px 12px rgba(42, 24, 16, 0.3);
+  --shadow-card-active: 0 1px 3px rgba(42, 24, 16, 0.2);
   --shadow-focus: 0 0 0 3px rgba(216, 154, 44, 0.4);
+
+  /* ─── Background overlays — tune opacity to taste ─── */
+  --bg-image-overlay: rgba(42, 24, 16, 0.2);
+  --bg-darken: rgba(0, 0, 0, 0.2);
 }
 
 /* ─── Tailwind theme bridge ─── */
@@ -100,12 +108,13 @@
 /* ─── Base styles ─── */
 
 body {
-  /* TODO: replace with Holi powder background image */
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(200, 75, 31, 0.15) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 30%, rgba(216, 154, 44, 0.12) 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 80%, rgba(31, 74, 92, 0.18) 0%, transparent 60%),
-    var(--bg-base);
+    /* Darken layer — tune --bg-darken opacity for text legibility */
+    linear-gradient(var(--bg-darken), var(--bg-darken)),
+    /* Warm tint overlay — tune --bg-image-overlay opacity to taste */
+    linear-gradient(var(--bg-image-overlay), var(--bg-image-overlay)),
+    url("/backgrounds/holi-match-2-bkg1.png") center / cover no-repeat fixed;
+  background-color: var(--bg-base); /* fallback while image loads */
   color: var(--text-primary-light);
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -146,4 +155,31 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: scale(0.95) translateY(8px);
   }
+}
+
+/* ─── Match modal celebratory entrance ─── */
+
+@keyframes match-modal-enter {
+  0%   { opacity: 0; transform: scale(0.9); }
+  60%  { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Card match pulse ─── */
+
+@keyframes card-match-pulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Card mismatch shake ─── */
+
+@keyframes card-mismatch-shake {
+  0%, 100% { margin-left: 0; }
+  10%      { margin-left: -8px; }
+  30%      { margin-left: 8px; }
+  50%      { margin-left: -6px; }
+  70%      { margin-left: 6px; }
+  90%      { margin-left: -3px; }
 }
