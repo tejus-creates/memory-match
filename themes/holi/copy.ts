@@ -26,23 +26,23 @@ export const copy: Copy = {
     levels: {
       easy: {
         label: "Easy",
-        description: "6 pairs — a gentle start",
+        description: "A gentle start",
         pairs: 6,
       },
       medium: {
         label: "Medium",
-        description: "10 pairs — a fair challenge",
-        pairs: 10,
+        description: "A fair challenge",
+        pairs: 12,
       },
       hard: {
         label: "Hard",
-        description: "15 pairs — test your memory",
-        pairs: 15,
+        description: "Test your memory",
+        pairs: 20,
       },
       expert: {
         label: "Expert",
-        description: "20 pairs — the ultimate challenge",
-        pairs: 20,
+        description: "The ultimate challenge",
+        pairs: 28,
       },
     },
   },
