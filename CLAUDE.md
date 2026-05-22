@@ -236,92 +236,7 @@ What this architecture explicitly does NOT do
 No runtime theme switching (by design)
 No cross-game data sharing (by design)
 No master hub site (separate concern — build one later if you want to market the games together)
-
-4. Game logic
-Game state shape
-typescripttype Player = {
-  id: 1 | 2;
-  name: string;
-  avatarId: string;
-  score: number;          // number of matched pairs found
-};
-
-type Card = {
-  id: string;             // matches CardContent.id
-  uid: string;            // unique per card instance (since pairs share id)
-  isFlipped: boolean;
-  isMatched: boolean;
-  position: number;       // 0-indexed position on the board
-};
-
-type GameState = {
-  mode: '1p' | '2p';
-  players: Player[];
-  activePlayerId: 1 | 2;
-  deckId: string;         // which deck back design is in use
-  difficulty: 12 | 18 | 24 | 30;  // number of pairs
-  board: Card[];
-  flippedCards: Card[];   // 0, 1, or 2 cards currently face-up and unresolved
-  matchedThisTurn: Card[];// for the modal queue
-  timer: number;          // seconds elapsed
-  flips: number;          // total flips this game
-  status: 'idle' | 'playing' | 'paused' | 'won';
-  showingMatchModal: CardContent | null;
-};
-Game flow
-
-Setup: player(s) choose name, avatar, deck, difficulty. State is initialized.
-Deal: select N unique cards from cards.ts (where N = difficulty), duplicate each to make pairs, shuffle, place on board.
-Turn loop:
-
-Player taps a face-down card → it flips, added to flippedCards
-Player taps a second face-down card → it flips, added to flippedCards
-System checks match:
-
-Match: both cards' isMatched = true, score++ for active player, show match modal with card content, when modal closes the active player gets another turn (in 2P)
-No match: wait 1.2s, flip both back, switch to other player (in 2P)
-
-
-In 1P mode: turn never "switches" — same player plays until done. Flip counter and timer still tick.
-
-
-Win condition: all cards matched. Show results screen with stats and (in 2P) the winner.
-
-Match modal behavior
-
-Appears immediately after a successful match, before flipping cards face-down (in a match, they stay face-up matched)
-Contains: card image, card name, blurb, continue button
-Auto-dismisses after 4 seconds (long enough to read, short enough not to interrupt flow)
-Tap anywhere on the modal to dismiss faster (not just the Continue button)
-During modal display, the timer pauses (educational reading shouldn't count against time)
-If 2P, the game tracks that the matching player gets another turn AFTER modal dismisses
-
-Scoring
-
-1P: track time, total flips, matches found, best streak (consecutive matches without a miss). Show 1–3 stars on results based on flip efficiency relative to a perfect run.
-
-3 stars: ≤ 1.5× perfect (perfect = 2 flips per pair)
-2 stars: ≤ 2× perfect
-1 star: completed the game
-
-
-2P: track matches per player. Winner = most matches. Tie possible.
-
-Pause behavior
-
-Pause button on the gameplay screen freezes the timer
-Pause modal shows: Resume, Restart, Quit to Menu
-Currently flipped cards stay flipped during pause (no peeking exploit — they were already visible)
-
-Persistence
-The following are saved to localStorage and restored on return visits:
-
-Player names (last used)
-Last selected avatars (one per player slot)
-Last selected deck
-Last selected difficulty
-Sound on/off preference
-In-progress game: if a player quits mid-game, "Continue last game" appears on the splash screen on their next visit
+on 
 
 5. Design system
 Visual language principle
@@ -473,6 +388,169 @@ Results: same as gameplay, plus a parchment modal card holding the stats
 
 Visual texture (optional, polish-phase only)
 If time allows in the polish phase, the parchment surface can use a subtle paper-texture PNG overlay (multiply blend mode, 20% opacity, tileable). This gives modals and the results screen a hint of physical warmth. Skip if it costs performance — it's not worth more than a few KB of asset budget.
+
+6. Screen-by-screen specification
+6.1 Splash screen (/)
+Purpose: entry point, sets the tone.
+Contents:
+
+Holi powder background (full-bleed, with subtle dark overlay for text contrast)
+Game logo (centered, ~60% of viewport width on mobile, max 600px on desktop)
+Primary button: "Play" → navigates to /menu
+Secondary button (conditional): "Continue last game" → only if a saved in-progress game exists in localStorage
+Bottom row of small icon buttons: Sound toggle, Help/info (Help modal shows brief "How to play" content)
+Footer: HAF logo, "Created by Tejus Shah", copyright
+
+Behavior:
+
+On load, check localStorage for in-progress game. If present, show "Continue" button.
+Sound toggle persists across sessions.
+
+6.2 Mode selection (/menu)
+Purpose: choose 1 player or 2 players.
+Contents:
+
+Holi powder background (consistent across screens)
+Game logo (smaller than splash, ~30% viewport width)
+Two large buttons side by side (stacked vertically on narrow mobile): "1 Player" and "2 Players"
+Back arrow icon button (top-left) → back to splash
+
+Behavior:
+
+Tap "1 Player" → goes to setup with mode = '1p'
+Tap "2 Players" → goes to setup with mode = '2p' (setup will run twice, once per player)
+
+6.3 Player setup (/setup)
+Purpose: name and avatar selection. Runs once for 1P, twice for 2P.
+Contents:
+
+Step indicator at top: "Player 1 of 2" (or just "Player 1" in 1P mode)
+Progress bar (small, beneath step indicator)
+Heading: "Pick a name and avatar"
+Name input (text field, placeholder "Player 1" / "Player 2", max 12 chars)
+Avatar grid: all available avatars shown as a wrapping grid, no pagination. If there are 6–12 avatars, show all. If more, use a vertically scrollable section.
+Selected avatar gets a thick saffron ring + slight scale-up
+Primary button: "Continue"
+Back arrow icon button (top-left)
+
+Behavior:
+
+Name field auto-focuses on screen load
+Name defaults to "Player 1" / "Player 2" if left blank
+After Player 1 in 2P mode, advance to Player 2 setup (same screen, fresh state)
+After final player, navigate to /deck
+
+No paginated carousel for avatars. That was a UX issue in v1.
+6.4 Deck selection (/deck)
+Purpose: choose the visual theme for card backs.
+Contents:
+
+Heading: "Choose your deck"
+Grid of available deck designs (2 columns mobile, 3 on tablet, 3–6 on desktop)
+Each deck shown as a large thumbnail of its back design with a name underneath
+Selected deck: thick saffron ring + slight scale
+Primary button: "Continue"
+Back arrow icon button (top-left)
+
+Behavior:
+
+Last-selected deck is highlighted by default on return visits
+Tap a deck to select; the Continue button is disabled until a selection is made (but defaults to last-used)
+
+6.5 Difficulty selection (/difficulty)
+Purpose: choose game length.
+Contents:
+
+Heading: "Choose difficulty"
+Four large buttons in a row (mobile: 2×2 grid):
+
+12 Matches — "Quick"
+18 Matches — "Easy"
+24 Matches — "Hard"
+30 Matches — "Expert"
+
+
+Each button shows: pair count + difficulty label + estimated time ("~2 min" / "~3 min" / etc.)
+Primary button: "Start game"
+Back arrow icon button (top-left)
+
+Behavior:
+
+Selected difficulty is highlighted (saffron fill); others are secondary style
+Default selection: last-used, or 18 (medium) on first play
+Tap "Start game" → preload card images for the selected deck → navigate to /play
+
+6.6 Gameplay (/play)
+Purpose: the core game.
+Layout: top-bar HUD (NOT a sidebar). This is critical and is the biggest change from v1.
+Top bar contents (slim, 48px tall on desktop, 56px on mobile to accommodate touch):
+
+Left: home icon (returns to menu with confirmation if game is in progress)
+Center-left: timer (with clock icon)
+Center: match counter ("3 / 18")
+Center-right: flip counter
+Right: pause icon, sound toggle icon
+
+Below top bar (only in 2P mode): a player status row showing both players:
+
+Each player: avatar circle (32px) + name + match count
+Active player: highlighted with a saffron underline or background tint
+The non-active player is dimmed slightly (opacity 0.6)
+
+Main area: the card grid, full width, generous padding (16px mobile, 32px desktop).
+Card grid math:
+
+12 cards (24 total): 4 columns × 6 rows on mobile, 6 × 4 on desktop
+18 cards (36 total): 4 × 9 mobile, 6 × 6 desktop
+24 cards (48 total): 6 × 8 mobile, 8 × 6 desktop
+30 cards (60 total): 5 × 12 mobile, 10 × 6 desktop
+
+Use grid-template-columns: repeat(var(--cols), 1fr) with --cols set via JS based on difficulty and viewport.
+Card aspect ratio: 1:1 (square). Each card has the deck back design (face-down) or the card illustration (face-up). Already-matched cards stay face-up but are dimmed (opacity 0.5).
+6.7 Match modal
+Purpose: educational moment after every successful match.
+Layout (keep the v1 design — it was good):
+
+Modal max-width 480px on desktop, 90vw on mobile
+Two-column: card illustration left (~40%), text content right (~60%)
+On narrow mobile (under 480px), stack vertically
+Card name in saffron, all-caps, with thin underline
+Blurb below name, in --text-base
+"Continue" button beneath blurb
+Subtle "Auto-continues in 4s" caption below button
+
+Behavior:
+
+Appears on every match
+Tap anywhere on modal (not just button) to dismiss
+Auto-dismiss after 4 seconds
+Timer pauses while modal is shown
+Modal closes → if 2P, active player gets another turn
+
+6.8 Pause modal
+Purpose: let players pause without losing progress.
+Contents:
+
+Heading: "Game paused"
+Three buttons stacked: Resume (primary), Restart, Quit to Menu (secondary)
+"Quit to Menu" shows confirmation: "Quit current game? Progress will be lost."
+
+Behavior:
+
+Timer freezes
+Cards remain in current flip state (no penalty)
+
+6.9 Results screen (/results)
+Purpose: end-of-game summary.
+Contents:
+
+Heading: "Happy Holi!" (or theme-appropriate celebration string — pulled from theme/copy.ts)
+1–3 star display based on efficiency (1P only)
+Stats cards: Time, Flips, Efficiency %, Best Streak
+(2P only) Winner banner: "Tejus wins!" with their avatar
+(2P only) Both players' match counts displayed
+"New personal record!" banner if applicable (1P only, tracked in localStorage per difficulty)
+Two buttons: "Play Again" (primary, restarts with same settings) and "Main Menu" (secondary)
 
 10. Asset inventory
 All Holi assets exist and are to be reused from the previous build. They live inside the theme folder, not in a global /public directory. The build script copies the active theme's /assets contents into /public at build time.
