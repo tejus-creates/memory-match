@@ -39,6 +39,18 @@ function getContext(): AudioContext {
 }
 
 /**
+ * Ensure the AudioContext is running. Called before every sound play.
+ * Browsers suspend the context until a user gesture, and may re-suspend
+ * it after inactivity. This handles both cases.
+ */
+function ensureContextResumed(): void {
+  const c = getContext();
+  if (c.state === "suspended") {
+    c.resume();
+  }
+}
+
+/**
  * Browsers block AudioContext until first user gesture.
  * Call this once — it attaches a one-shot listener that resumes
  * the context on the first click/touch/keydown.
@@ -48,10 +60,7 @@ export function initAudio(): void {
   if (unlocked) return;
 
   const unlock = () => {
-    const c = getContext();
-    if (c.state === "suspended") {
-      c.resume();
-    }
+    ensureContextResumed();
     unlocked = true;
     window.removeEventListener("click", unlock, true);
     window.removeEventListener("touchstart", unlock, true);
@@ -108,7 +117,7 @@ function playTone(
   },
 ) {
   const c = getContext();
-  if (c.state === "suspended") return; // not yet unlocked
+  ensureContextResumed();
 
   const o = opts ?? {};
   const vol = (o.volume ?? 1) * MASTER_VOLUME;
@@ -133,7 +142,7 @@ function playTone(
 
 function playNoise(duration: number, volume: number = 0.3) {
   const c = getContext();
-  if (c.state === "suspended") return;
+  ensureContextResumed();
 
   const vol = volume * MASTER_VOLUME;
   const bufferSize = c.sampleRate * duration;
