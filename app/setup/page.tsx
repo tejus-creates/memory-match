@@ -78,8 +78,6 @@ function SetupContent() {
     }
   }, [is2P, step, router]);
 
-  // Progress bar: 1P = always full; 2P = 50% on step 1, 100% on step 2
-  const progress = is2P ? (step === 1 ? 50 : 100) : 100;
   const stepLabel = is2P ? `Player ${step} of 2` : "Player 1";
 
   return (
@@ -121,28 +119,11 @@ function SetupContent() {
         className="flex flex-col items-center gap-[var(--space-5)]"
         elevated
       >
-        {/* Step indicator + progress bar */}
-        <div className="w-full flex flex-col items-center gap-[var(--space-2)]">
-          <EyebrowLabel color="marigold">{stepLabel}</EyebrowLabel>
-          {is2P && (
-            <div
-              className="w-full max-w-[200px] h-[3px] rounded-full overflow-hidden"
-              style={{ backgroundColor: "rgba(244, 232, 208, 0.15)" }}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${progress}%`,
-                  backgroundColor: "var(--c-marigold)",
-                  transition: "width 300ms ease-out",
-                }}
-              />
-            </div>
-          )}
-        </div>
+        {/* Step indicator */}
+        <EyebrowLabel color="marigold">{stepLabel}</EyebrowLabel>
 
         {/* Heading */}
-        <DisplayHeading size="lg" underline>
+        <DisplayHeading size="lg">
           Pick a name and avatar
         </DisplayHeading>
 

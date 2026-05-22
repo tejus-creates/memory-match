@@ -2,33 +2,33 @@ import type { DeckDesign } from "@/lib/engine/types";
 
 export const decks: DeckDesign[] = [
   {
-    id: "krishna",
-    name: "Krishna",
-    image: "/decks/krishna.webp",
-  },
-  {
-    id: "hanuman",
-    name: "Hanuman",
-    image: "/decks/hanuman.webp",
-  },
-  {
-    id: "mandala-color",
-    name: "Color Mandala",
-    image: "/decks/mandala-color.webp",
-  },
-  {
-    id: "mandala-om",
-    name: "Om Mandala",
-    image: "/decks/mandala-om.webp",
-  },
-  {
     id: "ramayana",
     name: "Ramayana",
-    image: "/decks/ramayana.webp",
+    image: "/decks/ramayana.png",
   },
   {
-    id: "ganesha",
+    id: "playful-hanuman",
+    name: "Hanuman",
+    image: "/decks/playful-hanuman.png",
+  },
+  {
+    id: "playful-krishna",
+    name: "Krishna",
+    image: "/decks/playful-krishna.png",
+  },
+  {
+    id: "ganesh-warli",
     name: "Ganesha",
-    image: "/decks/ganesha.webp",
+    image: "/decks/ganesh-warli.png",
+  },
+  {
+    id: "ornate-om",
+    name: "Om Mandala",
+    image: "/decks/ornate-om.png",
+  },
+  {
+    id: "holi-powder",
+    name: "Holi Powder",
+    image: "/decks/holi-powder.png",
   },
 ];
