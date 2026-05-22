@@ -21,13 +21,13 @@ interface PanelProps {
  * Used on splash, menu, setup, deck selection, difficulty — any screen
  * that needs a readable content area without a full modal overlay.
  */
-export function Panel({ children, className = "", maxWidth = 480, fillOpacity = 0.3, elevated = false }: PanelProps) {
+export function Panel({ children, className = "", maxWidth = 480, fillOpacity = 0.4, elevated = false }: PanelProps) {
   return (
     <div
       className={[
         "w-[calc(100%-var(--space-8))]",
         "rounded-[var(--radius-modal)]",
-        "backdrop-blur-[12px]",
+        "backdrop-blur-[4px]",
         "p-[var(--space-6)] sm:p-[var(--space-8)]",
         className,
       ].join(" ")}
