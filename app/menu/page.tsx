@@ -61,7 +61,7 @@ export default function MenuPage() {
       <div className="flex-1" />
 
       {/* ── Panel with title + mode buttons ── */}
-      <Panel className="flex flex-col items-center gap-[var(--space-8)]">
+      <Panel className="flex flex-col items-center gap-[var(--space-8)]" elevated>
         {/* Title graphic — smaller than splash */}
         <div className="w-full max-w-[min(360px,70vw)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
