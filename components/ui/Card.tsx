@@ -6,8 +6,9 @@
  *   face-down  → deck back showing, brass border, full brightness, clickable
  *   active     → illustration showing, orange border (--c-sindoor), full brightness, not clickable
  *                 (card is being evaluated — waiting for second flip)
- *   matched    → illustration showing, thin faded border, dimmed (opacity 0.5), not clickable
- *                 (pair already found — minimal/no shadow, receding)
+ *   matched    → illustration showing, thin faded border, slightly dimmed (opacity 0.75),
+ *                 settled flat (no lift, minimal shadow), not clickable
+ *                 (pair already found — lies flat while artwork stays vivid)
  *   revealed   → illustration showing, brass border, full brightness, not clickable
  *                 (neutral reveal — used for end-of-game win celebration)
  *
@@ -29,6 +30,8 @@ interface CardProps {
   name: string;
   onClick?: () => void;
   disabled?: boolean;
+  /** When true, plays the mismatch shake animation */
+  shaking?: boolean;
 }
 
 export function Card({
@@ -38,6 +41,7 @@ export function Card({
   name,
   onClick,
   disabled = false,
+  shaking = false,
 }: CardProps) {
   const isFlipped = state !== "face-down";
   const isInteractive = !!onClick && !disabled && state === "face-down";
@@ -82,13 +86,22 @@ export function Card({
    * Opacity is inline (not Tailwind) to avoid Safari stacking-context
    * conflicts with perspective.
    */
+  const isMatched = state === "matched";
+
+  // Delay the settle so the match pulse registers before cards retire
+  const settleDelay = isMatched ? "500ms" : "0ms";
+
   const outerStyle: CSSProperties = {
     position: "relative",
     width: "100%",
     paddingBottom: "100%",
     perspective: "1000px",
-    opacity: state === "matched" ? 0.5 : 1,
-    transition: "opacity 300ms ease-out",
+    opacity: isMatched ? 0.75 : 1,
+    // Elevated cards lift slightly; matched cards settle flat
+    transform: isMatched ? "translateY(0)" : "translateY(-2px)",
+    transition: `opacity 400ms ease-out ${settleDelay}, transform 400ms ease-out ${settleDelay}`,
+    // Mismatch shake — applied via prop, runs once then clears
+    animation: shaking ? "card-mismatch-shake 500ms ease-out" : undefined,
   };
 
   /* ── Inner: the rotating container ── */
@@ -122,6 +135,7 @@ export function Card({
     borderRadius: "var(--radius-card)",
     overflow: "hidden",
     boxShadow: shadow,
+    transition: `box-shadow 400ms ease-out ${settleDelay}`,
   };
 
   const backStyle: CSSProperties = {
@@ -181,7 +195,7 @@ function borderClass(state: CardState): string {
 }
 
 function shadowForState(state: CardState, isInteractive: boolean): string {
-  if (state === "matched") return "none";
+  if (state === "matched") return "var(--shadow-card-matched)";
   if (isInteractive) return "var(--shadow-card)";
   return "var(--shadow-card)";
 }

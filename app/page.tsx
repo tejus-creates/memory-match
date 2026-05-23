@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
-import { initAudio, playSound, isMuted, toggleMute } from "@/lib/sound";
+import { playSound, isMuted, toggleMute } from "@/lib/sound";
 import { getSavedGame } from "@/lib/engine/storage";
 
 export default function SplashPage() {
@@ -14,7 +14,6 @@ export default function SplashPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    initAudio();
     setMuted(isMuted());
     setHasSavedGame(getSavedGame() !== null);
     requestAnimationFrame(() => setMounted(true));
@@ -46,7 +45,7 @@ export default function SplashPage() {
         {/* Title graphic — constrain width only, height follows naturally */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/branding/vibrant_holi_memories_title.png"
+          src="/branding/vibrant_holi_memories_title.webp"
           alt="Vibrant Holi Memories"
           style={{ maxWidth: "min(440px, 80vw)", width: "100%", height: "auto" }}
         />
@@ -98,7 +97,7 @@ export default function SplashPage() {
       {/* Footer — outside the panel */}
       <footer className="flex flex-col items-center gap-[var(--space-3)] pt-[var(--space-6)]">
         <Image
-          src="/branding/HAFLogo2019_RGB_white.png"
+          src="/branding/HAFLogo2019_RGB_white.webp"
           alt="Hindu American Foundation"
           width={140}
           height={40}

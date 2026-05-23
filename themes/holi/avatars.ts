@@ -2,23 +2,33 @@ import type { AvatarOption } from "@/lib/engine/types";
 
 export const avatars: AvatarOption[] = [
   {
+    id: "cloud",
+    name: "Cloud",
+    image: "/avatars/avatars_0001_cloud.webp",
+  },
+  {
     id: "flame",
     name: "Flame",
-    image: "/avatars/flame.webp",
+    image: "/avatars/avatars_0002_flame.webp",
   },
   {
-    id: "water-drop",
-    name: "Water Drop",
-    image: "/avatars/water-drop.webp",
+    id: "storyteller",
+    name: "Storyteller",
+    image: "/avatars/avatars_0003_storyteller.webp",
   },
   {
-    id: "lotus",
-    name: "Lotus",
-    image: "/avatars/lotus.webp",
+    id: "elder",
+    name: "Elder",
+    image: "/avatars/avatars_0004_elder.webp",
   },
   {
-    id: "peacock",
-    name: "Peacock",
-    image: "/avatars/peacock.webp",
+    id: "artist",
+    name: "Artist",
+    image: "/avatars/avatars_0005_artist.webp",
+  },
+  {
+    id: "musician",
+    name: "Musician",
+    image: "/avatars/avatars_0006_musician.webp",
   },
 ];

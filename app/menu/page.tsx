@@ -66,7 +66,7 @@ export default function MenuPage() {
         <div className="w-full max-w-[min(360px,70vw)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/branding/vibrant_holi_memories_title.png"
+            src="/branding/vibrant_holi_memories_title.webp"
             alt="Vibrant Holi Memories"
             className="w-full h-auto"
           />
@@ -98,7 +98,7 @@ export default function MenuPage() {
       <footer className="flex flex-col items-center gap-[var(--space-3)] pt-[var(--space-6)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/branding/HAFLogo2019_RGB_white.png"
+          src="/branding/HAFLogo2019_RGB_white.webp"
           alt="Hindu American Foundation"
           className="h-[32px] w-auto opacity-70"
         />

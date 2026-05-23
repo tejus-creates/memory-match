@@ -14,29 +14,45 @@ export function shuffle<T>(
 }
 
 /**
- * Select `count` unique cards from the source array,
+ * Select `count` cards from the source array to form pairs,
  * duplicate each to create pairs, assign unique IDs and positions,
  * then shuffle the result.
+ *
+ * When `count` exceeds the number of unique source cards, cards are
+ * reused (appearing as multiple distinct pairs) so the game can run
+ * at any difficulty even with a small card pool.
  */
 export function dealCards(
   sourceIds: string[],
   count: number,
   random: () => number = Math.random
 ): { id: string; uid: string; position: number }[] {
-  if (count > sourceIds.length) {
-    throw new Error(
-      `Cannot deal ${count} pairs from ${sourceIds.length} unique cards`
-    );
+  if (sourceIds.length === 0) {
+    throw new Error("Cannot deal from an empty card pool");
   }
 
-  // Pick `count` unique cards at random
-  const picked = shuffle([...sourceIds], random).slice(0, count);
+  // Build a selection of `count` cards, cycling through the shuffled
+  // pool as many times as needed.
+  const shuffled = shuffle([...sourceIds], random);
+  const picked: { sourceId: string; pairIndex: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    picked.push({ sourceId: shuffled[i % shuffled.length], pairIndex: i });
+  }
 
-  // Create pairs — each card ID appears twice with unique uid
-  const pairs = picked.flatMap((id) => [
-    { id, uid: `${id}-a` },
-    { id, uid: `${id}-b` },
-  ]);
+  // Create pairs. When a source card is reused, each occurrence gets a
+  // unique `id` (sourceId + pairIndex) so the engine's match-by-id logic
+  // only matches the two cards within the SAME pair, not across pairs.
+  // The original sourceId can be recovered by stripping the `::N` suffix.
+  const pairs = picked.flatMap(({ sourceId, pairIndex }) => {
+    // Only append suffix when the pool is being reused
+    const id = count > sourceIds.length
+      ? `${sourceId}::${pairIndex}`
+      : sourceId;
+    return [
+      { id, uid: `${id}-a` },
+      { id, uid: `${id}-b` },
+    ];
+  });
 
   // Shuffle and assign positions
   return shuffle(pairs, random).map((card, index) => ({

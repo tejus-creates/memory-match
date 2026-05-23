@@ -25,7 +25,7 @@ function getCardContent(id: string) {
 }
 
 function initStore(
-  opts: { mode?: "1p" | "2p"; difficulty?: 6 | 10 | 15 | 20 } = {}
+  opts: { mode?: "1p" | "2p"; difficulty?: 6 | 12 | 20 | 28 } = {}
 ) {
   const store = createGameStore(getCardContent);
   store.getState().initGame({

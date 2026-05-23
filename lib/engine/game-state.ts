@@ -20,7 +20,7 @@ export type Card = {
 };
 
 export type GameStatus = "idle" | "playing" | "paused" | "won";
-export type Difficulty = 6 | 10 | 15 | 20;
+export type Difficulty = 6 | 12 | 20 | 28;
 export type GameMode = "1p" | "2p";
 
 export type GameState = {

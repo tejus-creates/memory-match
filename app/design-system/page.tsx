@@ -10,7 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { MatchModal } from "@/components/ui/MatchModal";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card, type CardState } from "@/components/ui/Card";
-import { initAudio, playSound, toggleMute, isMuted, type SoundType } from "@/lib/sound";
+import { playSound, toggleMute, isMuted, type SoundType } from "@/lib/sound";
 
 /* ─── Placeholder card images (inline SVG data URIs) ─── */
 
@@ -51,7 +51,6 @@ export default function DesignSystemPage() {
   const [muted, setMuted] = useState(false);
 
   useEffect(() => {
-    initAudio();
     setMuted(isMuted());
   }, []);
 

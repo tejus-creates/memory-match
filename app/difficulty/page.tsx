@@ -294,7 +294,7 @@ function DifficultyContent() {
       <footer className="flex flex-col items-center gap-[var(--space-3)] pt-[var(--space-6)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/branding/HAFLogo2019_RGB_white.png"
+          src="/branding/HAFLogo2019_RGB_white.webp"
           alt="Hindu American Foundation"
           className="h-[32px] w-auto opacity-70"
         />

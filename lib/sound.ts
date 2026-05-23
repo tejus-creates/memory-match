@@ -117,7 +117,14 @@ function playTone(
   },
 ) {
   const c = getContext();
-  ensureContextResumed();
+
+  // If the context is suspended, resume it and retry after it's running.
+  // Scheduling on a suspended context uses a frozen currentTime (0),
+  // so sounds end up in the past once the context actually resumes.
+  if (c.state === "suspended") {
+    c.resume().then(() => playTone(freq, duration, opts));
+    return;
+  }
 
   const o = opts ?? {};
   const vol = (o.volume ?? 1) * MASTER_VOLUME;
@@ -142,7 +149,11 @@ function playTone(
 
 function playNoise(duration: number, volume: number = 0.3) {
   const c = getContext();
-  ensureContextResumed();
+
+  if (c.state === "suspended") {
+    c.resume().then(() => playNoise(duration, volume));
+    return;
+  }
 
   const vol = volume * MASTER_VOLUME;
   const bufferSize = c.sampleRate * duration;

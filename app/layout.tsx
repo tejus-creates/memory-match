@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Alice, Andika } from "next/font/google";
 import { theme } from "@/lib/engine/active-theme";
+import { AudioUnlock } from "@/components/AudioUnlock";
 import "./globals.css";
 
 const alice = Alice({
@@ -35,7 +36,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${alice.variable} ${andika.variable} h-full`}>
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body className="min-h-full flex flex-col antialiased">
+        <AudioUnlock />
+        {children}
+      </body>
     </html>
   );
 }
