@@ -15,6 +15,8 @@ import {
   getPlayerPrefs,
   savePlayerPrefs,
 } from "@/lib/engine/storage";
+import { navigateForward, navigateBack } from "@/lib/navigation";
+import { PageTransition } from "@/components/PageTransition";
 import type { GameMode } from "@/lib/engine/game-state";
 
 function SetupContent() {
@@ -28,7 +30,6 @@ function SetupContent() {
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState<string>("");
-  const [mounted, setMounted] = useState(false);
 
   // Load saved prefs for the current step on mount / step change
   useEffect(() => {
@@ -41,11 +42,6 @@ function SetupContent() {
       setSelectedAvatar(avatars[0]?.id ?? "");
     }
   }, [step]);
-
-  // Entrance animation
-  useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
-  }, []);
 
   const handleAvatarSelect = useCallback((avatarId: string) => {
     playSound("tap");
@@ -64,7 +60,7 @@ function SetupContent() {
       setStep(2);
     } else {
       // Done — go to deck selection
-      router.push(`/deck?mode=${mode}`);
+      navigateForward(router, `/deck?mode=${mode}`);
     }
   }, [name, step, selectedAvatar, is2P, mode, router]);
 
@@ -74,19 +70,16 @@ function SetupContent() {
       // Go back to Player 1
       setStep(1);
     } else {
-      router.push("/menu");
+      navigateBack(router, "/menu");
     }
   }, [is2P, step, router]);
 
   const stepLabel = is2P ? `Player ${step} of 2` : "Player 1";
 
   return (
+    <PageTransition>
     <main
       className="flex flex-1 flex-col items-center justify-between px-[var(--space-4)] py-[var(--space-10)]"
-      style={{
-        opacity: mounted ? 1 : 0,
-        transition: "opacity 600ms ease-out",
-      }}
     >
       {/* ── Back button — top-left ── */}
       <div className="w-full" style={{ maxWidth: 480 }}>
@@ -213,6 +206,7 @@ function SetupContent() {
         </div>
       </footer>
     </main>
+    </PageTransition>
   );
 }
 

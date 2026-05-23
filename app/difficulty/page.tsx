@@ -9,6 +9,8 @@ import { DisplayHeading } from "@/components/ui/DisplayHeading";
 import { playSound } from "@/lib/sound";
 import { copy } from "@/themes/holi/copy";
 import { getGamePrefs, saveGamePrefs } from "@/lib/engine/storage";
+import { navigateForward, navigateBack } from "@/lib/navigation";
+import { PageTransition } from "@/components/PageTransition";
 import type { GameMode } from "@/lib/engine/game-state";
 
 /* ─── Difficulty levels from theme ─── */
@@ -115,16 +117,10 @@ function DifficultyContent() {
   const mode = (searchParams.get("mode") as GameMode) || "1p";
 
   const [selected, setSelected] = useState<LevelKey>("medium");
-  const [mounted, setMounted] = useState(false);
 
   // Load saved difficulty on mount
   useEffect(() => {
     setSelected(getInitialLevel());
-  }, []);
-
-  // Entrance animation
-  useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   const handleSelect = useCallback((key: LevelKey) => {
@@ -140,21 +136,18 @@ function DifficultyContent() {
       difficulty: copy.difficulty.levels[selected].pairs,
       soundEnabled: existing?.soundEnabled ?? true,
     });
-    router.push(`/play?mode=${mode}`);
+    navigateForward(router, `/play?mode=${mode}`);
   }, [selected, mode, router]);
 
   const handleBack = useCallback(() => {
     playSound("tap");
-    router.push(`/deck?mode=${mode}`);
+    navigateBack(router, `/deck?mode=${mode}`);
   }, [mode, router]);
 
   return (
+    <PageTransition>
     <main
       className="flex flex-1 flex-col items-center justify-between px-[var(--space-4)] py-[var(--space-10)]"
-      style={{
-        opacity: mounted ? 1 : 0,
-        transition: "opacity 600ms ease-out",
-      }}
     >
       {/* ── Back button — top-left ── */}
       <div className="w-full" style={{ maxWidth: 480 }}>
@@ -310,6 +303,7 @@ function DifficultyContent() {
         </div>
       </footer>
     </main>
+    </PageTransition>
   );
 }
 

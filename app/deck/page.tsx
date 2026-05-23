@@ -15,6 +15,8 @@ import { DisplayHeading } from "@/components/ui/DisplayHeading";
 import { playSound } from "@/lib/sound";
 import { decks } from "@/themes/holi/decks";
 import { getGamePrefs, saveGamePrefs } from "@/lib/engine/storage";
+import { navigateForward, navigateBack } from "@/lib/navigation";
+import { PageTransition } from "@/components/PageTransition";
 import type { GameMode } from "@/lib/engine/game-state";
 
 /* ─── Eased programmatic scroll ─── */
@@ -85,7 +87,6 @@ function DeckContent() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   // Detect prefers-reduced-motion
@@ -110,11 +111,6 @@ function DeckContent() {
         el.scrollLeft = centerOffset(el, child);
       }
     });
-  }, []);
-
-  // Entrance animation
-  useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   // Scroll listener — sync activeIndex to whichever card is centered.
@@ -243,21 +239,18 @@ function DeckContent() {
       difficulty: existing?.difficulty ?? 12,
       soundEnabled: existing?.soundEnabled ?? true,
     });
-    router.push(`/difficulty?mode=${mode}`);
+    navigateForward(router, `/difficulty?mode=${mode}`);
   }, [activeIndex, mode, router]);
 
   const handleBack = useCallback(() => {
     playSound("tap");
-    router.push(`/setup?mode=${mode}`);
+    navigateBack(router, `/setup?mode=${mode}`);
   }, [mode, router]);
 
   return (
+    <PageTransition>
     <main
       className="flex flex-1 flex-col items-center justify-between px-[var(--space-4)] py-[var(--space-10)]"
-      style={{
-        opacity: mounted ? 1 : 0,
-        transition: "opacity 600ms ease-out",
-      }}
     >
       {/* ── Back button — top-left ── */}
       <div className="w-full" style={{ maxWidth: 480 }}>
@@ -514,6 +507,7 @@ function DeckContent() {
         }
       `}</style>
     </main>
+    </PageTransition>
   );
 }
 

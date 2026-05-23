@@ -1,60 +1,56 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { Panel } from "@/components/ui/Panel";
 import { playSound } from "@/lib/sound";
+import { navigateForward, navigateBack } from "@/lib/navigation";
+import { PageTransition } from "@/components/PageTransition";
 
 export default function MenuPage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
-  }, []);
 
   const handleMode = useCallback(
     (mode: "1p" | "2p") => {
       playSound("tap");
-      router.push(`/setup?mode=${mode}`);
+      navigateForward(router, `/setup?mode=${mode}`);
     },
     [router]
   );
 
   const handleBack = useCallback(() => {
     playSound("tap");
-  }, []);
+    navigateBack(router, "/");
+  }, [router]);
 
   return (
+    <PageTransition>
     <main
       className="flex flex-1 flex-col items-center justify-between px-[var(--space-4)] py-[var(--space-10)]"
-      style={{
-        opacity: mounted ? 1 : 0,
-        transition: "opacity 600ms ease-out",
-      }}
     >
       {/* ── Back button — top-left ── */}
       <div className="w-full" style={{ maxWidth: 480 }}>
-        <Link href="/" onClick={handleBack}>
-          <IconButton aria-label="Back to splash" className="mb-[var(--space-4)]">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7 7-7" />
-            </svg>
-          </IconButton>
-        </Link>
+        <IconButton
+          aria-label="Back to splash"
+          className="mb-[var(--space-4)]"
+          onClick={handleBack}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 12H5" />
+            <path d="M12 19l-7-7 7-7" />
+          </svg>
+        </IconButton>
       </div>
 
       {/* ── Spacer ── */}
@@ -114,5 +110,6 @@ export default function MenuPage() {
         </div>
       </footer>
     </main>
+    </PageTransition>
   );
 }

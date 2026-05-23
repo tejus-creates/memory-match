@@ -1,22 +1,23 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
 import { playSound, isMuted, toggleMute } from "@/lib/sound";
 import { getSavedGame } from "@/lib/engine/storage";
+import { navigateForward } from "@/lib/navigation";
+import { PageTransition } from "@/components/PageTransition";
 
 export default function SplashPage() {
+  const router = useRouter();
   const [muted, setMuted] = useState(true);
   const [hasSavedGame, setHasSavedGame] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMuted(isMuted());
     setHasSavedGame(getSavedGame() !== null);
-    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   const handleToggleMute = useCallback(() => {
@@ -27,15 +28,18 @@ export default function SplashPage() {
 
   const handlePlay = useCallback(() => {
     playSound("tap");
-  }, []);
+    navigateForward(router, "/menu");
+  }, [router]);
+
+  const handleContinue = useCallback(() => {
+    playSound("tap");
+    navigateForward(router, "/play");
+  }, [router]);
 
   return (
+    <PageTransition>
     <main
       className="flex flex-1 flex-col items-center justify-between px-[var(--space-4)] py-[var(--space-10)]"
-      style={{
-        opacity: mounted ? 1 : 0,
-        transition: "opacity 600ms ease-out",
-      }}
     >
       {/* ── Top spacer ── */}
       <div className="flex-1" />
@@ -52,21 +56,18 @@ export default function SplashPage() {
 
         {/* Action buttons */}
         <div className="flex flex-col items-center w-full" style={{ gap: 16, maxWidth: 280 }}>
-          <Link href="/menu" className="w-full" onClick={handlePlay}>
-            <Button variant="primary" className="w-full">
-              Play
-            </Button>
-          </Link>
+          <Button variant="primary" className="w-full" onClick={handlePlay}>
+            Play
+          </Button>
 
           {hasSavedGame && (
-            <Link href="/play" className="w-full" onClick={handlePlay}>
-              <Button
-                variant="secondary"
-                className="w-full !text-[var(--c-parchment)] !border-[rgba(244,232,208,0.8)] hover:!bg-[rgba(244,232,208,0.08)]"
-              >
-                Continue last game
-              </Button>
-            </Link>
+            <Button
+              variant="secondary"
+              className="w-full !text-[var(--c-parchment)] !border-[rgba(244,232,208,0.8)] hover:!bg-[rgba(244,232,208,0.08)]"
+              onClick={handleContinue}
+            >
+              Continue last game
+            </Button>
           )}
         </div>
 
@@ -115,5 +116,6 @@ export default function SplashPage() {
         </div>
       </footer>
     </main>
+    </PageTransition>
   );
 }
