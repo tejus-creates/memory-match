@@ -131,8 +131,14 @@ const MISMATCH_DELAY = 1200;
 function PlayContent() {
   const searchParams = useSearchParams();
   const resolveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Determine pair count from query param or saved prefs
+  // Only read localStorage after mount (client-side)
   const pairsOverride = searchParams.get("pairs");
 
   const pairs = useMemo(() => {
@@ -140,14 +146,14 @@ function PlayContent() {
       const n = parseInt(pairsOverride, 10);
       if (VALID_PAIRS.includes(n as (typeof VALID_PAIRS)[number])) return n;
     }
-    const prefs =
-      typeof window !== "undefined" ? getGamePrefs() : null;
+    if (!mounted) return 6; // stable default for SSR + first client render
+    const prefs = getGamePrefs();
     if (prefs?.difficulty) {
       const d = prefs.difficulty;
       if (VALID_PAIRS.includes(d as (typeof VALID_PAIRS)[number])) return d;
     }
-    return 6; // default to smallest
-  }, [pairsOverride]);
+    return 6;
+  }, [pairsOverride, mounted]);
 
   const totalCards = pairs * 2;
 
@@ -157,29 +163,32 @@ function PlayContent() {
   const gridInitRef = useRef(false);
 
   useEffect(() => {
+    if (!mounted) return;
     if (gridInitRef.current) return; // already locked
     gridInitRef.current = true;
     const isPortrait = window.innerHeight > window.innerWidth;
     const table = isPortrait ? GRID_PORTRAIT : GRID_LANDSCAPE;
     setGrid(table[totalCards] ?? { cols: 4, rows: 3 });
-  }, [totalCards]);
+  }, [totalCards, mounted]);
 
-  // Determine deck back image
+  // Determine deck back image — only read prefs after mount
   const deckImage = useMemo(() => {
-    if (typeof window === "undefined") return decks[0].image;
+    if (!mounted) return decks[0].image;
     const prefs = getGamePrefs();
     if (prefs?.deckId) {
       const deck = decks.find((d) => d.id === prefs.deckId);
       if (deck) return deck.image;
     }
     return decks[0].image;
-  }, []);
+  }, [mounted]);
 
   // Create store eagerly (pure — safe in useMemo)
   const store = useMemo(() => createGameStore(getCardContent), []);
 
-  // Init game on mount / when pairs change
+  // Init game on mount / when pairs change — only after mounted
   useEffect(() => {
+    if (!mounted) return;
+
     const p1 = getPlayerPrefs(1);
     const prefs = getGamePrefs();
 
@@ -199,7 +208,7 @@ function PlayContent() {
     return () => {
       if (resolveTimerRef.current) clearTimeout(resolveTimerRef.current);
     };
-  }, [pairs, store]);
+  }, [pairs, store, mounted]);
 
   // Subscribe to store for re-renders
   const board = useStore(store, (s) => s.board);
@@ -290,6 +299,30 @@ function PlayContent() {
 
   // Responsive cell size: fits both width AND height
   const cellSize = useCellSize(grid.cols, grid.rows);
+
+  // ── Pre-mount placeholder: identical on server + first client render ──
+  if (!mounted) {
+    return (
+      <main className="relative flex h-dvh flex-col overflow-hidden">
+        <div
+          className="shrink-0 flex items-center justify-between px-4"
+          style={{
+            height: HUD_RESERVE,
+            background: "rgba(42, 24, 16, 0.55)",
+            borderBottom: "1px dashed rgba(184, 150, 106, 0.4)",
+          }}
+        />
+        <div className="flex flex-1 items-center justify-center">
+          <span
+            className="font-[var(--font-body)] text-sm"
+            style={{ color: "var(--text-secondary-light)" }}
+          >
+            Loading&hellip;
+          </span>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="relative flex h-dvh flex-col overflow-hidden">

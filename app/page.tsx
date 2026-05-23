@@ -41,13 +41,13 @@ export default function SplashPage() {
       <div className="flex-1" />
 
       {/* ── Title + buttons + sound toggle ── */}
-      <div className="flex flex-col items-center" style={{ gap: 32, maxWidth: 600, width: "100%" }}>
+      <div className="flex flex-col items-center" style={{ gap: 32, maxWidth: 640, width: "100%" }}>
         {/* Title graphic — constrain width only, height follows naturally */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/branding/vibrant_holi_memories_title.webp"
           alt="Vibrant Holi Memories"
-          style={{ maxWidth: "min(440px, 80vw)", width: "100%", height: "auto" }}
+          style={{ maxWidth: "min(600px, 85vw)", width: "100%", height: "auto" }}
         />
 
         {/* Action buttons */}
