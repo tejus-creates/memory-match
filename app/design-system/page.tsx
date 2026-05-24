@@ -825,7 +825,7 @@ export default function DesignSystemPage() {
           image={placeholderFront("Thandai", "#0E9BB5")}
           name="Thandai"
           blurb="Thandai is a chilled drink made with milk, almonds, and aromatic spices, enjoyed during Holi celebrations."
-          autoDismissMs={6000}
+
         />
       </Section>
 

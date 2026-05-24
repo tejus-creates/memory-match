@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { useStore } from "zustand";
 import { Card } from "@/components/ui/Card";
 import type { CardState } from "@/components/ui/Card";
+import { MatchModal } from "@/components/ui/MatchModal";
 import { getGamePrefs, getPlayerPrefs } from "@/lib/engine/storage";
 import {
   createGameStore,
@@ -20,7 +21,7 @@ import {
 } from "@/lib/engine/game-state";
 import { decks } from "@/themes/holi/decks";
 import { cards as cardPool } from "@/themes/holi/cards";
-import { playSound } from "@/lib/sound";
+import { playSound, warmContext } from "@/lib/sound";
 
 /* ─── Fixed grid structures per orientation ─── */
 
@@ -215,6 +216,21 @@ function PlayContent() {
   const flippedCards = useStore(store, (s) => s.flippedCards);
   const status = useStore(store, (s) => s.status);
   const flips = useStore(store, (s) => s.flips);
+  const showingMatchModal = useStore(store, (s) => s.showingMatchModal);
+
+  // Gate modal visibility with a local flag so we can delay appearance
+  // by ~250ms after the match registers (the engine sets showingMatchModal
+  // immediately in flipCard; we hold it back for a beat).
+  const [modalReady, setModalReady] = useState(false);
+  const modalIsOpen = !!showingMatchModal && modalReady;
+
+  // Keep a snapshot of the last non-null modal content so props stay
+  // valid during the Modal's 150ms exit animation (avoids <img src="">).
+  const matchModalContentRef = useRef(showingMatchModal);
+  if (showingMatchModal) {
+    matchModalContentRef.current = showingMatchModal;
+  }
+  const modalContent = matchModalContentRef.current;
 
   const flippedUids = useMemo(
     () => new Set(flippedCards.map((c) => c.uid)),
@@ -235,24 +251,28 @@ function PlayContent() {
     const FLIP_DURATION = 300;
 
     if (isMatch) {
-      // Sound + pulse fire together after flip completes
+      // Sequence: flip completes → match sound (pulse) → 250ms beat →
+      // modal appears + chime fire together.
+      const BEAT_DELAY = 250;
+
       const pulseStart = setTimeout(() => {
         playSound("match");
       }, FLIP_DURATION);
-      shakeTimersRef.current = [pulseStart];
 
-      const t = setTimeout(() => {
-        store.getState().dismissMatchModal();
-      }, FLIP_DURATION + 600);
-      resolveTimerRef.current = t;
+      const modalAppear = setTimeout(() => {
+        playSound("chime");
+        setModalReady(true);
+      }, FLIP_DURATION + BEAT_DELAY);
+
+      shakeTimersRef.current = [pulseStart, modalAppear];
     } else {
-      // Wait for flip to finish → shake + sound → then flip back
+      // Wait for flip to finish → shake + sound fire together → flip back
       const SHAKE_DURATION = 500;
 
-      // 1. After both cards are fully face-up, start shake + sound
+      // 1. After both cards are fully face-up, shake + sound start together
       const shakeStart = setTimeout(() => {
-        playSound("mismatch");
         setShakingUids(new Set([first.uid, second.uid]));
+        playSound("mismatch");
       }, FLIP_DURATION);
 
       // 2. After shake finishes, clear it
@@ -284,13 +304,23 @@ function PlayContent() {
     }
   }, [status, flips, pairs]);
 
+  // Dismiss match modal → resolve match → cards settle
+  const handleDismissMatch = useCallback(() => {
+    setModalReady(false);
+    store.getState().dismissMatchModal();
+  }, [store]);
+
   // Handle card tap
   const handleFlip = useCallback(
     (uid: string) => {
       const state = store.getState();
       if (state.status !== "playing") return;
       if (state.flippedCards.length >= 2) return;
+      if (state.showingMatchModal) return; // block flips while modal is open
 
+      // Pre-warm AudioContext during this user gesture so sounds
+      // scheduled in upcoming timeouts (match/mismatch) don't lag.
+      warmContext();
       playSound("flip");
       state.flipCard(uid);
     },
@@ -399,6 +429,15 @@ function PlayContent() {
           })}
         </div>
       </div>
+
+      {/* Match modal — educational content on successful match */}
+      <MatchModal
+        isOpen={modalIsOpen}
+        onClose={handleDismissMatch}
+        image={modalContent?.image ?? ""}
+        name={modalContent?.name ?? ""}
+        blurb={modalContent?.blurb ?? ""}
+      />
 
       {/* Debug overlay */}
       <div className="fixed bottom-2 left-2 z-50 rounded bg-black/70 px-2 py-1 font-[var(--font-body)] text-[11px] text-white/80">

@@ -10,6 +10,7 @@ interface ModalProps {
   closeOnOutsideClick?: boolean;
   ariaLabel?: string;
   maxWidth?: number;
+  width?: string;
   shadow?: string;
 }
 
@@ -20,6 +21,7 @@ export function Modal({
   closeOnOutsideClick = true,
   ariaLabel,
   maxWidth = 480,
+  width = "90vw",
   shadow,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -137,7 +139,7 @@ export function Modal({
         ref={panelRef}
         tabIndex={-1}
         style={{
-          width: "90vw",
+          width,
           maxWidth,
           borderRadius: "var(--radius-modal)",
           border: "0.5px solid var(--c-ink)",

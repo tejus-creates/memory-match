@@ -227,8 +227,19 @@ const synthPlayers: Record<SoundType, () => void> = {
 
 /* ─── Public API ─── */
 
+/**
+ * Ensure the AudioContext is running NOW. Call this during a user gesture
+ * (click/tap) so that sounds scheduled shortly after (e.g. in a setTimeout)
+ * don't hit the async resume() path and lag.
+ */
+export function warmContext(): void {
+  if (typeof window === "undefined") return;
+  ensureContextResumed();
+}
+
 export function playSound(type: SoundType): void {
   if (typeof window === "undefined") return;
   if (loadMute()) return;
+  ensureContextResumed();
   synthPlayers[type]();
 }
