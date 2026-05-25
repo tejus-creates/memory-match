@@ -8,11 +8,13 @@ import {
   useRef,
   useMemo,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useStore } from "zustand";
 import { Card } from "@/components/ui/Card";
 import type { CardState } from "@/components/ui/Card";
 import { MatchModal } from "@/components/ui/MatchModal";
+import { GameHUD } from "@/components/gameplay/GameHUD";
+import { PauseModal } from "@/components/gameplay/PauseModal";
 import { getGamePrefs, getPlayerPrefs } from "@/lib/engine/storage";
 import {
   createGameStore,
@@ -48,7 +50,7 @@ const MAX_CELL_SIZE = 160;
 /** Gap between cells in px */
 const GRID_GAP = 8;
 /** Vertical space reserved for the HUD/header chrome */
-const HUD_RESERVE = 80;
+const HUD_RESERVE = 60;
 /** Horizontal padding on each side — tighter on phones, generous on desktop */
 const PAD_X_DESKTOP = 40;
 const PAD_X_MOBILE = 10;
@@ -131,8 +133,10 @@ const MISMATCH_DELAY = 1200;
 
 function PlayContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const resolveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [pauseOpen, setPauseOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -217,6 +221,49 @@ function PlayContent() {
   const status = useStore(store, (s) => s.status);
   const flips = useStore(store, (s) => s.flips);
   const showingMatchModal = useStore(store, (s) => s.showingMatchModal);
+
+  // Timer tick — drives the game clock; tick() is a no-op when paused/won
+  useEffect(() => {
+    if (!mounted) return;
+    const id = setInterval(() => store.getState().tick(), 1000);
+    return () => clearInterval(id);
+  }, [mounted, store]);
+
+  // Pause / resume handlers
+  const handlePause = useCallback(() => {
+    store.getState().pause();
+    setPauseOpen(true);
+    playSound("tap");
+  }, [store]);
+
+  const handleResume = useCallback(() => {
+    store.getState().resume();
+    setPauseOpen(false);
+  }, [store]);
+
+  const handleRestart = useCallback(() => {
+    setPauseOpen(false);
+    const p1 = getPlayerPrefs(1);
+    const prefs = getGamePrefs();
+    store.getState().initGame({
+      mode: "1p",
+      players: [
+        {
+          name: p1?.name ?? "Player 1",
+          avatarId: p1?.avatarId ?? "flame",
+        },
+      ],
+      deckId: prefs?.deckId ?? decks[0].id,
+      difficulty: pairs as Difficulty,
+      cardPool: cardPool.map((c) => c.id),
+    });
+  }, [store, pairs]);
+
+  const handleQuit = useCallback(() => {
+    setPauseOpen(false);
+    store.getState().reset();
+    router.push("/menu");
+  }, [store, router]);
 
   // Gate modal visibility with a local flag so we can delay appearance
   // by ~250ms after the match registers (the engine sets showingMatchModal
@@ -335,11 +382,11 @@ function PlayContent() {
     return (
       <main className="relative flex h-dvh flex-col overflow-hidden">
         <div
-          className="shrink-0 flex items-center justify-between px-4"
+          className="shrink-0"
           style={{
             height: HUD_RESERVE,
             background: "rgba(42, 24, 16, 0.55)",
-            borderBottom: "1px dashed rgba(184, 150, 106, 0.4)",
+            borderBottom: "1px solid var(--border-thin)",
           }}
         />
         <div className="flex flex-1 items-center justify-center">
@@ -356,38 +403,25 @@ function PlayContent() {
 
   return (
     <main className="relative flex h-dvh flex-col overflow-hidden">
-      {/* ── TEMPORARY: placeholder HUD panel (replace with real HUD later) ── */}
-      <div
-        className="shrink-0 flex items-center justify-between px-4"
-        style={{
-          height: HUD_RESERVE,
-          background: "rgba(42, 24, 16, 0.55)",
-          borderBottom: "1px dashed rgba(184, 150, 106, 0.4)",
-        }}
-      >
-        <span
-          className="font-[var(--font-body)] text-xs tracking-widest uppercase"
-          style={{ color: "rgba(244, 232, 208, 0.35)" }}
-        >
-          HUD
-        </span>
-        {/* TEMPORARY: card-count test buttons */}
-        <div className="flex gap-1.5">
-          {VALID_PAIRS.map((p) => (
-            <a
-              key={p}
-              href={`/play?pairs=${p}`}
-              className={[
-                "rounded px-2 py-1 font-[var(--font-body)] text-xs transition-colors",
-                p === pairs
-                  ? "bg-[var(--c-marigold)] text-[var(--c-ink)]"
-                  : "bg-[var(--surface-overlay)] text-[var(--text-primary-light)] hover:bg-[var(--c-marigold)]/30",
-              ].join(" ")}
-            >
-              {p * 2}
-            </a>
-          ))}
-        </div>
+      {/* ── Game HUD ── */}
+      <GameHUD store={store} onPause={handlePause} />
+
+      {/* TEMPORARY: card-count test buttons */}
+      <div className="absolute top-[62px] right-2 z-40 flex gap-1.5">
+        {VALID_PAIRS.map((p) => (
+          <a
+            key={p}
+            href={`/play?pairs=${p}`}
+            className={[
+              "rounded px-2 py-1 font-[var(--font-body)] text-xs transition-colors",
+              p === pairs
+                ? "bg-[var(--c-marigold)] text-[var(--c-ink)]"
+                : "bg-[var(--surface-overlay)] text-[var(--text-primary-light)] hover:bg-[var(--c-marigold)]/30",
+            ].join(" ")}
+          >
+            {p * 2}
+          </a>
+        ))}
       </div>
 
       {/* Centering region: flex-1 takes all remaining height,
@@ -437,6 +471,14 @@ function PlayContent() {
         image={modalContent?.image ?? ""}
         name={modalContent?.name ?? ""}
         blurb={modalContent?.blurb ?? ""}
+      />
+
+      {/* Pause modal */}
+      <PauseModal
+        isOpen={pauseOpen}
+        onResume={handleResume}
+        onRestart={handleRestart}
+        onQuit={handleQuit}
       />
 
       {/* Debug overlay */}

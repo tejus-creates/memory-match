@@ -25,7 +25,7 @@ export function Button({
     primary: [
       "bg-[var(--c-magenta)] text-[var(--c-parchment)]",
       "shadow-[0_2px_0_var(--c-magenta-dark)]",
-      "hover:brightness-115 hover:-translate-y-[1px] hover:shadow-[0_3px_0_var(--c-magenta-dark)]",
+      "hover:brightness-115",
       "active:translate-y-[2px] active:shadow-[0_0_0_var(--c-magenta-dark)]",
       "transition-[transform,box-shadow,filter] duration-[80ms] ease-out",
       "focus-visible:shadow-[0_2px_0_var(--c-magenta-dark),var(--shadow-focus)]",

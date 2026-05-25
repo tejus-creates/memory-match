@@ -13,6 +13,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { Panel } from "@/components/ui/Panel";
 import { DisplayHeading } from "@/components/ui/DisplayHeading";
 import { playSound } from "@/lib/sound";
+import { SoundToggle } from "@/components/ui/SoundToggle";
 import { decks } from "@/themes/holi/decks";
 import { getGamePrefs, saveGamePrefs } from "@/lib/engine/storage";
 import { navigateForward, navigateBack } from "@/lib/navigation";
@@ -252,27 +253,18 @@ function DeckContent() {
     <main
       className="flex flex-1 flex-col items-center justify-between px-[var(--space-4)] py-[var(--space-10)]"
     >
-      {/* ── Back button — top-left ── */}
-      <div className="w-full" style={{ maxWidth: 480 }}>
+      {/* ── Top bar: back-left, sound-right ── */}
+      <div className="w-full flex items-center justify-between mb-[var(--space-4)]" style={{ maxWidth: 480 }}>
         <IconButton
           aria-label="Back to setup"
-          className="mb-[var(--space-4)]"
           onClick={handleBack}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5" />
             <path d="M12 19l-7-7 7-7" />
           </svg>
         </IconButton>
+        <SoundToggle />
       </div>
 
       {/* ── Spacer ── */}

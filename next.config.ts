@@ -5,6 +5,7 @@ const theme = process.env.THEME || "holi";
 const themeDir = `./themes/${theme}`;
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["192.168.1.18", "192.168.1.0/24", "10.0.0.0/8"],
   experimental: {
     viewTransition: true,
   },

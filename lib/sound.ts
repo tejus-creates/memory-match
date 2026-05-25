@@ -63,12 +63,13 @@ export function initAudio(): void {
     ensureContextResumed();
     unlocked = true;
     window.removeEventListener("click", unlock, true);
-    window.removeEventListener("touchstart", unlock, true);
+    window.removeEventListener("touchstart", unlock);
     window.removeEventListener("keydown", unlock, true);
   };
 
   window.addEventListener("click", unlock, true);
-  window.addEventListener("touchstart", unlock, true);
+  // passive + bubbling: avoids blocking touch dispatch on iOS Safari
+  window.addEventListener("touchstart", unlock, { passive: true });
   window.addEventListener("keydown", unlock, true);
 }
 
