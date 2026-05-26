@@ -71,7 +71,7 @@ function SetupContent() {
       // Go back to Player 1
       setStep(1);
     } else {
-      navigateBack(router, "/menu");
+      navigateBack(router, "/");
     }
   }, [is2P, step, router]);
 
@@ -85,7 +85,7 @@ function SetupContent() {
       {/* ── Top bar: back-left, sound-right ── */}
       <div className="w-full flex items-center justify-between mb-[var(--space-4)]" style={{ maxWidth: 480 }}>
         <IconButton
-          aria-label={is2P && step === 2 ? "Back to Player 1" : "Back to menu"}
+          aria-label={is2P && step === 2 ? "Back to Player 1" : "Back to home"}
           onClick={handleBack}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

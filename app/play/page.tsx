@@ -262,7 +262,7 @@ function PlayContent() {
   const handleQuit = useCallback(() => {
     setPauseOpen(false);
     store.getState().reset();
-    router.push("/menu");
+    router.push("/");
   }, [store, router]);
 
   // Gate modal visibility with a local flag so we can delay appearance
