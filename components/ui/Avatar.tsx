@@ -78,7 +78,7 @@ export function Avatar({
   }
 
   return (
-    <div className={classes} style={{ width: size, height: size }}>
+    <div className={`shrink-0 ${classes}`} style={{ width: size, height: size }}>
       {content}
     </div>
   );

@@ -16,11 +16,13 @@ import type { CardState } from "@/components/ui/Card";
 import { MatchModal } from "@/components/ui/MatchModal";
 import { GameHUD } from "@/components/gameplay/GameHUD";
 import { PauseModal } from "@/components/gameplay/PauseModal";
+import { ResultsModal } from "@/components/gameplay/ResultsModal";
 import { getGamePrefs, getPlayerPrefs } from "@/lib/engine/storage";
 import {
   createGameStore,
   type Card as EngineCard,
   type Difficulty,
+  type GameMode,
 } from "@/lib/engine/game-state";
 import { decks } from "@/themes/holi/decks";
 import { cards as cardPool } from "@/themes/holi/cards";
@@ -50,8 +52,6 @@ const GRID_PORTRAIT: Record<number, GridShape> = {
 const MAX_CELL_SIZE = 160;
 /** Gap between cells in px */
 const GRID_GAP = 8;
-/** Vertical space reserved for the HUD/header chrome */
-const HUD_RESERVE = 60;
 /** Horizontal padding on each side — tighter on phones, generous on desktop */
 const PAD_X_DESKTOP = 40;
 const PAD_X_MOBILE = 10;
@@ -69,17 +69,17 @@ function padX(): number {
 function computeCellSize(
   cols: number,
   rows: number,
+  hudReserve: number,
 ): number {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 
   const availW = vw - padX() * 2;
-  const availH = vh - HUD_RESERVE - PAD_Y * 2;
+  const availH = vh - hudReserve - PAD_Y * 2;
 
   const fitW = (availW - (cols - 1) * GRID_GAP) / cols;
   const fitH = (availH - (rows - 1) * GRID_GAP) / rows;
 
-  // Use the binding constraint — whichever axis is tighter
   return Math.min(fitW, fitH, MAX_CELL_SIZE);
 }
 
@@ -87,17 +87,17 @@ function computeCellSize(
  * Hook: responsive cell size that fits both axes.
  * Recomputes on resize so the board always fits without scrolling.
  */
-function useCellSize(cols: number, rows: number): number {
-  const [size, setSize] = useState(80); // safe default before mount
+function useCellSize(cols: number, rows: number, hudReserve: number): number {
+  const [size, setSize] = useState(80);
 
   useEffect(() => {
     function recalc() {
-      setSize(computeCellSize(cols, rows));
+      setSize(computeCellSize(cols, rows, hudReserve));
     }
     recalc();
     window.addEventListener("resize", recalc);
     return () => window.removeEventListener("resize", recalc);
-  }, [cols, rows]);
+  }, [cols, rows, hudReserve]);
 
   return size;
 }
@@ -139,6 +139,7 @@ function PlayContent() {
   const [mounted, setMounted] = useState(false);
   const [pauseOpen, setPauseOpen] = useState(false);
   const [dealing, setDealing] = useState(true);
+  const [showResults, setShowResults] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const dealTlRef = useRef<gsap.core.Timeline | null>(null);
 
@@ -146,8 +147,11 @@ function PlayContent() {
     setMounted(true);
   }, []);
 
+  // Read mode from URL (setup flow passes ?mode=1p or ?mode=2p)
+  const modeParam = searchParams.get("mode");
+  const mode: GameMode = modeParam === "2p" ? "2p" : "1p";
+
   // Determine pair count from query param or saved prefs
-  // Only read localStorage after mount (client-side)
   const pairsOverride = searchParams.get("pairs");
 
   const pairs = useMemo(() => {
@@ -199,16 +203,22 @@ function PlayContent() {
     if (!mounted) return;
 
     const p1 = getPlayerPrefs(1);
+    const p2 = mode === "2p" ? getPlayerPrefs(2) : null;
     const prefs = getGamePrefs();
 
+    const players: { name: string; avatarId: string }[] = [
+      { name: p1?.name ?? "Player 1", avatarId: p1?.avatarId ?? "flame" },
+    ];
+    if (mode === "2p") {
+      players.push({
+        name: p2?.name ?? "Player 2",
+        avatarId: p2?.avatarId ?? "cloud",
+      });
+    }
+
     store.getState().initGame({
-      mode: "1p",
-      players: [
-        {
-          name: p1?.name ?? "Player 1",
-          avatarId: p1?.avatarId ?? "flame",
-        },
-      ],
+      mode,
+      players,
       deckId: prefs?.deckId ?? decks[0].id,
       difficulty: pairs as Difficulty,
       cardPool: cardPool.map((c) => c.id),
@@ -217,7 +227,7 @@ function PlayContent() {
     return () => {
       if (resolveTimerRef.current) clearTimeout(resolveTimerRef.current);
     };
-  }, [pairs, store, mounted]);
+  }, [pairs, store, mounted, mode]);
 
   // Subscribe to store for re-renders
   const board = useStore(store, (s) => s.board);
@@ -227,7 +237,8 @@ function PlayContent() {
   const showingMatchModal = useStore(store, (s) => s.showingMatchModal);
 
   // Responsive cell size: fits both width AND height
-  const cellSize = useCellSize(grid.cols, grid.rows);
+  const hudReserve = 68;
+  const cellSize = useCellSize(grid.cols, grid.rows, hudReserve);
 
   // ── Deal animation ──
   // Cards fly from bottom-center to grid positions in reading order.
@@ -338,22 +349,30 @@ function PlayContent() {
 
   const handleRestart = useCallback(() => {
     setPauseOpen(false);
+    setShowResults(false);
     setDealing(true);
     const p1 = getPlayerPrefs(1);
+    const p2 = mode === "2p" ? getPlayerPrefs(2) : null;
     const prefs = getGamePrefs();
+
+    const players: { name: string; avatarId: string }[] = [
+      { name: p1?.name ?? "Player 1", avatarId: p1?.avatarId ?? "flame" },
+    ];
+    if (mode === "2p") {
+      players.push({
+        name: p2?.name ?? "Player 2",
+        avatarId: p2?.avatarId ?? "cloud",
+      });
+    }
+
     store.getState().initGame({
-      mode: "1p",
-      players: [
-        {
-          name: p1?.name ?? "Player 1",
-          avatarId: p1?.avatarId ?? "flame",
-        },
-      ],
+      mode,
+      players,
       deckId: prefs?.deckId ?? decks[0].id,
       difficulty: pairs as Difficulty,
       cardPool: cardPool.map((c) => c.id),
     });
-  }, [store, pairs]);
+  }, [store, pairs, mode]);
 
   const handleQuit = useCallback(() => {
     setPauseOpen(false);
@@ -438,14 +457,14 @@ function PlayContent() {
     };
   }, [flippedCards, store]);
 
-  // Win detection
+  // Win detection → show results after a short delay
   useEffect(() => {
     if (status === "won") {
       playSound("win");
-      // eslint-disable-next-line no-console
-      console.log(`[Game Won] Flips: ${flips}, Pairs: ${pairs}`);
+      const t = setTimeout(() => setShowResults(true), 600);
+      return () => clearTimeout(t);
     }
-  }, [status, flips, pairs]);
+  }, [status]);
 
   // Dismiss match modal → resolve match → cards settle
   const handleDismissMatch = useCallback(() => {
@@ -477,7 +496,7 @@ function PlayContent() {
         <div
           className="shrink-0"
           style={{
-            height: HUD_RESERVE,
+            height: 68,
             background: "rgba(42, 24, 16, 0.55)",
             borderBottom: "1px solid var(--border-thin)",
           }}
@@ -497,7 +516,7 @@ function PlayContent() {
   return (
     <main className="relative flex h-dvh flex-col overflow-hidden">
       {/* ── Game HUD ── */}
-      <GameHUD store={store} onPause={handlePause} />
+      <GameHUD store={store} onPause={handlePause} onRestart={handleRestart} onQuit={handleQuit} mode={mode} />
 
       {/* TEMPORARY: card-count test buttons */}
       <div className="absolute top-[62px] right-2 z-40 flex gap-1.5">
@@ -578,6 +597,15 @@ function PlayContent() {
         onResume={handleResume}
         onRestart={handleRestart}
         onQuit={handleQuit}
+      />
+
+      {/* Results modal — shown when all pairs matched */}
+      <ResultsModal
+        isOpen={showResults}
+        store={store}
+        mode={mode}
+        onPlayAgain={handleRestart}
+        onMainMenu={handleQuit}
       />
 
       {/* Debug overlay */}

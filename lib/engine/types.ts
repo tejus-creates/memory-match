@@ -112,14 +112,24 @@ export interface Copy {
     turnLabel: string;
     matchesLabel: string;
     timeLabel: string;
+    accuracyLabel: string;
+    streakLabel: string;
+    bestStreakLabel: string;
   };
   results: {
     heading: string;
+    heading2p: string;
     totalTime: string;
     totalMoves: string;
     matchesMade: string;
     playAgain: string;
     backToMenu: string;
+    gameComplete: string;
+    gameOver: string;
+    winnerBanner: string;
+    tieBanner: string;
+    continueButton: string;
+    learnCta: string;
   };
   matchModal: {
     eyebrow: string;
