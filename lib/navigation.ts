@@ -6,7 +6,7 @@ export function navigateForward(
   path: string
 ): void {
   document.documentElement.dataset.navDirection = "forward";
-  router.push(path, { transitionTypes: ["nav-forward"] });
+  router.push(path);
 }
 
 /** Back navigation — new screen slides in from the left. */
@@ -15,5 +15,5 @@ export function navigateBack(
   path: string
 ): void {
   document.documentElement.dataset.navDirection = "back";
-  router.push(path, { transitionTypes: ["nav-back"] });
+  router.push(path);
 }

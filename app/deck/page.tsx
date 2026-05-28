@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useRef,
+  type ReactNode,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +20,7 @@ import { getGamePrefs, saveGamePrefs } from "@/lib/engine/storage";
 import { navigateForward, navigateBack } from "@/lib/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import type { GameMode } from "@/lib/engine/game-state";
+import { useGsapLift } from "@/lib/use-gsap-lift";
 
 /* ─── Eased programmatic scroll ─── */
 
@@ -76,6 +78,55 @@ function getInitialIndex(): number {
 function centerOffset(parent: HTMLElement, child: HTMLElement): number {
   return (
     child.offsetLeft - parent.offsetLeft - (parent.clientWidth - child.offsetWidth) / 2
+  );
+}
+
+/* ─── Carousel arrow with GSAP lift ─── */
+
+function CarouselArrow({
+  label,
+  onClick,
+  position,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  position: "left" | "right";
+  children: ReactNode;
+}) {
+  const { ref } = useGsapLift<HTMLButtonElement>({
+    y: 2,
+    scale: 1.08,
+    duration: 0.16,
+    ease: "power2.out",
+    settleDuration: 0.22,
+    settleEase: "power2.inOut",
+    liftShadow: "0 2px 6px rgba(42, 24, 16, 0.2)",
+    restShadow: "none",
+  });
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={[
+        "absolute top-1/2 -translate-y-1/2 z-10",
+        position === "left" ? "left-0" : "right-0",
+        "flex items-center justify-center",
+        "w-[36px] h-[36px] sm:w-[40px] sm:h-[40px]",
+        "rounded-full",
+        "text-[var(--c-parchment)]",
+        "cursor-pointer",
+        "hover:bg-[rgba(244,232,208,0.15)]",
+        "transition-[background-color] duration-100 ease-out",
+        "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
+      ].join(" ")}
+      style={{ backgroundColor: "rgba(42, 24, 16, 0.5)" }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -285,24 +336,7 @@ function DeckContent() {
             {/* Scroll container + arrow buttons */}
             <div className="relative w-full">
               {/* Left arrow */}
-              <button
-                type="button"
-                aria-label="Previous deck"
-                onClick={handlePrev}
-                className={[
-                  "absolute left-0 top-1/2 -translate-y-1/2 z-10",
-                  "flex items-center justify-center",
-                  "w-[36px] h-[36px] sm:w-[40px] sm:h-[40px]",
-                  "rounded-full",
-                  "text-[var(--c-parchment)]",
-                  "cursor-pointer",
-                  "transition-[background-color,transform] duration-100 ease-out",
-                  "hover:bg-[rgba(244,232,208,0.15)]",
-                  "active:scale-[0.92]",
-                  "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
-                ].join(" ")}
-                style={{ backgroundColor: "rgba(42, 24, 16, 0.5)" }}
-              >
+              <CarouselArrow label="Previous deck" onClick={handlePrev} position="left">
                 <svg
                   width="20"
                   height="20"
@@ -315,27 +349,10 @@ function DeckContent() {
                 >
                   <path d="M15 18l-6-6 6-6" />
                 </svg>
-              </button>
+              </CarouselArrow>
 
               {/* Right arrow */}
-              <button
-                type="button"
-                aria-label="Next deck"
-                onClick={handleNext}
-                className={[
-                  "absolute right-0 top-1/2 -translate-y-1/2 z-10",
-                  "flex items-center justify-center",
-                  "w-[36px] h-[36px] sm:w-[40px] sm:h-[40px]",
-                  "rounded-full",
-                  "text-[var(--c-parchment)]",
-                  "cursor-pointer",
-                  "transition-[background-color,transform] duration-100 ease-out",
-                  "hover:bg-[rgba(244,232,208,0.15)]",
-                  "active:scale-[0.92]",
-                  "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
-                ].join(" ")}
-                style={{ backgroundColor: "rgba(42, 24, 16, 0.5)" }}
-              >
+              <CarouselArrow label="Next deck" onClick={handleNext} position="right">
                 <svg
                   width="20"
                   height="20"
@@ -348,7 +365,7 @@ function DeckContent() {
                 >
                   <path d="M9 18l6-6-6-6" />
                 </svg>
-              </button>
+              </CarouselArrow>
 
               {/* Horizontal scroll-snap container — fixed height prevents panel jitter.
                   Vertical padding gives the drop shadow room to render before

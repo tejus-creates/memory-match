@@ -9,7 +9,8 @@ import {
   useMemo,
 } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useStore } from "zustand";
+import { useStore } from "zustand/react";
+import gsap from "gsap";
 import { Card } from "@/components/ui/Card";
 import type { CardState } from "@/components/ui/Card";
 import { MatchModal } from "@/components/ui/MatchModal";
@@ -137,6 +138,9 @@ function PlayContent() {
   const resolveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mounted, setMounted] = useState(false);
   const [pauseOpen, setPauseOpen] = useState(false);
+  const [dealing, setDealing] = useState(true);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const dealTlRef = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -222,6 +226,97 @@ function PlayContent() {
   const flips = useStore(store, (s) => s.flips);
   const showingMatchModal = useStore(store, (s) => s.showingMatchModal);
 
+  // Responsive cell size: fits both width AND height
+  const cellSize = useCellSize(grid.cols, grid.rows);
+
+  // ── Deal animation ──
+  // Cards fly from bottom-center to grid positions in reading order.
+  // Positions are computed from grid math (cols, cellSize, gap) — no
+  // getBoundingClientRect, no rAF timing, no React lifecycle fragility.
+  const startDeal = useCallback(() => {
+    const el = gridRef.current;
+    if (!el) { setDealing(false); return; }
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDealing(false);
+      return;
+    }
+
+    const cells = Array.from(el.children) as HTMLElement[];
+    if (cells.length === 0) { setDealing(false); return; }
+
+    // Kill any previous deal
+    dealTlRef.current?.kill();
+    cells.forEach((c) => gsap.set(c, { clearProps: "all" }));
+
+    // Grid container position (one stable measurement)
+    const gridRect = el.getBoundingClientRect();
+
+    // Dealer: bottom-center of viewport
+    const dealerAbsX = window.innerWidth / 2;
+    const dealerAbsY = window.innerHeight + 40;
+
+    // Compute each cell's resting center from grid math, then the
+    // offset from dealer to that center (as a GSAP translate value).
+    const cols = grid.cols;
+    const step = cellSize + GRID_GAP;
+
+    const offsets = cells.map((_, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      // Cell center in absolute viewport coords
+      const cellAbsX = gridRect.left + col * step + cellSize / 2;
+      const cellAbsY = gridRect.top + row * step + cellSize / 2;
+      return {
+        x: dealerAbsX - cellAbsX,
+        y: dealerAbsY - cellAbsY,
+      };
+    });
+
+    // Place all cards at dealer (visible, stacked)
+    cells.forEach((cell, i) => {
+      gsap.set(cell, {
+        x: offsets[i].x,
+        y: offsets[i].y,
+        visibility: "visible",
+      });
+    });
+
+    // Adaptive stagger: ~1.6s total regardless of card count
+    const FLIGHT = 0.35;
+    const perCard = cells.length > 1
+      ? Math.max((1.6 - FLIGHT) / (cells.length - 1), 0.01)
+      : 0;
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        cells.forEach((c) => gsap.set(c, { clearProps: "all" }));
+        setDealing(false);
+      },
+    });
+
+    cells.forEach((cell, i) => {
+      tl.to(cell, { x: 0, y: 0, duration: FLIGHT, ease: "power2.out" }, i * perCard);
+    });
+
+    dealTlRef.current = tl;
+  }, [grid.cols, cellSize, setDealing]);
+
+  // Trigger deal after board renders — single rAF for layout, no polling
+  useEffect(() => {
+    if (!mounted || board.length === 0 || !dealing) return;
+    const id = requestAnimationFrame(startDeal);
+    return () => {
+      cancelAnimationFrame(id);
+      dealTlRef.current?.kill();
+      const el = gridRef.current;
+      if (el) {
+        const cells = Array.from(el.children) as HTMLElement[];
+        cells.forEach((c) => gsap.set(c, { clearProps: "all" }));
+      }
+    };
+  }, [mounted, board.length, dealing, startDeal]);
+
   // Timer tick — drives the game clock; tick() is a no-op when paused/won
   useEffect(() => {
     if (!mounted) return;
@@ -243,6 +338,7 @@ function PlayContent() {
 
   const handleRestart = useCallback(() => {
     setPauseOpen(false);
+    setDealing(true);
     const p1 = getPlayerPrefs(1);
     const prefs = getGamePrefs();
     store.getState().initGame({
@@ -374,9 +470,6 @@ function PlayContent() {
     [store],
   );
 
-  // Responsive cell size: fits both width AND height
-  const cellSize = useCellSize(grid.cols, grid.rows);
-
   // ── Pre-mount placeholder: identical on server + first client render ──
   if (!mounted) {
     return (
@@ -428,6 +521,7 @@ function PlayContent() {
        *  items-center + justify-center dead-centers the grid */}
       <div className="flex flex-1 items-center justify-center">
         <div
+          ref={gridRef}
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(${grid.cols}, ${cellSize}px)`,
@@ -440,6 +534,7 @@ function PlayContent() {
             const content = cardContentMap.get(baseCardId(card.id));
             const cardState = toCardState(card, flippedUids);
             const canFlip =
+              !dealing &&
               cardState === "face-down" &&
               status === "playing" &&
               flippedCards.length < 2;
@@ -447,7 +542,11 @@ function PlayContent() {
             return (
               <div
                 key={card.uid}
-                style={{ aspectRatio: "1", minWidth: 0 }}
+                style={{
+                  aspectRatio: "1",
+                  minWidth: 0,
+                  visibility: dealing ? "hidden" : "visible",
+                }}
               >
                 <Card
                   state={cardState}

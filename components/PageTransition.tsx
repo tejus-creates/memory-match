@@ -1,38 +1,16 @@
 "use client";
 
-import { ViewTransition } from "react";
 import type { ReactNode } from "react";
 
 /**
- * Wraps page content in React 19's <ViewTransition> for directional
- * slide animations on route navigation.
- *
- * - `name="page-content"` ensures old and new pages share a single
- *   transition group (one ::view-transition-old, one ::view-transition-new).
- * - `enter`/`exit` with "auto" for nav-forward/nav-back types tells React
- *   to participate in those transitions using browser-default animation.
- * - CSS in layout.tsx overrides the default with directional slides,
- *   keyed off [data-nav-direction] on <html> + the "page-content" name.
- * - `default="none"` suppresses animation for non-navigation transitions
- *   (Suspense reveals, initial hydration).
+ * Page transition wrapper. On Next 16 + React 19 this used <ViewTransition>;
+ * on Next 15 it renders a plain wrapper with the vt-name attribute so
+ * CSS-based view transitions still work where supported.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   return (
-    <ViewTransition
-      name="page-content"
-      enter={{
-        "nav-forward": "auto",
-        "nav-back": "auto",
-        default: "none",
-      }}
-      exit={{
-        "nav-forward": "auto",
-        "nav-back": "auto",
-        default: "none",
-      }}
-      default="none"
-    >
+    <div style={{ display: "contents" }} {...{ "vt-name": "page-content", "vt-update": "none" } as Record<string, string>}>
       {children}
-    </ViewTransition>
+    </div>
   );
 }

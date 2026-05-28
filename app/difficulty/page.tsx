@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { IconButton } from "@/components/ui/IconButton";
@@ -13,6 +13,7 @@ import { getGamePrefs, saveGamePrefs } from "@/lib/engine/storage";
 import { navigateForward, navigateBack } from "@/lib/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import type { GameMode } from "@/lib/engine/game-state";
+import { useGsapLift } from "@/lib/use-gsap-lift";
 
 /* ─── Difficulty levels from theme ─── */
 
@@ -110,6 +111,55 @@ const LEVEL_MOUND_COUNT: Record<LevelKey, 1 | 2 | 3 | 4> = {
   expert: 4,
 };
 
+/* ─── Difficulty option with GSAP lift ─── */
+
+function DifficultyOption({
+  isSelected,
+  onClick,
+  children,
+}: {
+  isSelected: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  const { ref } = useGsapLift<HTMLButtonElement>({
+    y: 2,
+    scale: 1.01,
+    duration: 0.16,
+    ease: "power2.out",
+    settleDuration: 0.22,
+    settleEase: "power2.inOut",
+    liftShadow: "0 2px 6px rgba(42, 24, 16, 0.15)",
+    restShadow: "none",
+  });
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      onClick={onClick}
+      className={[
+        "w-full text-left rounded-[var(--radius-button)]",
+        "px-[var(--space-5)] py-[var(--space-3)]",
+        "border-[1.5px]",
+        "cursor-pointer",
+        "transition-[border-color,background-color] duration-100 ease-out",
+        "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
+      ].join(" ")}
+      style={{
+        borderColor: isSelected
+          ? "var(--c-marigold)"
+          : "rgba(184, 150, 106, 0.3)",
+        backgroundColor: isSelected
+          ? "rgba(216, 154, 44, 0.18)"
+          : "rgba(42, 24, 16, 0.35)",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 /* ─── Component ─── */
 
 function DifficultyContent() {
@@ -183,27 +233,10 @@ function DifficultyContent() {
             const level = copy.difficulty.levels[key];
             const isSelected = selected === key;
             return (
-              <button
+              <DifficultyOption
                 key={key}
-                type="button"
+                isSelected={isSelected}
                 onClick={() => handleSelect(key)}
-                className={[
-                  "w-full text-left rounded-[var(--radius-button)]",
-                  "px-[var(--space-5)] py-[var(--space-3)]",
-                  "border-[1.5px]",
-                  "cursor-pointer",
-                  "transition-[border-color,background-color,transform] duration-100 ease-out",
-                  "active:scale-[0.98]",
-                  "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
-                ].join(" ")}
-                style={{
-                  borderColor: isSelected
-                    ? "var(--c-marigold)"
-                    : "rgba(184, 150, 106, 0.3)",
-                  backgroundColor: isSelected
-                    ? "rgba(216, 154, 44, 0.18)"
-                    : "rgba(42, 24, 16, 0.35)",
-                }}
               >
                 <div className="flex items-center gap-[var(--space-3)]">
                   {/* Left: mound icon */}
@@ -257,7 +290,7 @@ function DifficultyContent() {
                     </span>
                   </div>
                 </div>
-              </button>
+              </DifficultyOption>
             );
           })}
         </div>

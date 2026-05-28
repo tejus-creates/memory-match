@@ -9,6 +9,7 @@ import { playSound } from "@/lib/sound";
 import { getSavedGame } from "@/lib/engine/storage";
 import { navigateForward } from "@/lib/navigation";
 import { PageTransition } from "@/components/PageTransition";
+import { useGsapLift } from "@/lib/use-gsap-lift";
 
 export default function SplashPage() {
   const router = useRouter();
@@ -25,6 +26,19 @@ export default function SplashPage() {
     },
     [router]
   );
+
+  const liftOpts = {
+    y: 3,
+    scale: 1.04,
+    duration: 0.18,
+    ease: "power2.out" as const,
+    settleDuration: 0.25,
+    settleEase: "power2.inOut" as const,
+    liftShadow: "0 3px 0 var(--c-magenta-dark), 0 4px 8px rgba(42, 24, 16, 0.12)",
+    restShadow: "0 2px 0 var(--c-magenta-dark)",
+  };
+  const { ref: mode1Ref } = useGsapLift<HTMLButtonElement>(liftOpts);
+  const { ref: mode2Ref } = useGsapLift<HTMLButtonElement>(liftOpts);
 
   const handleContinue = useCallback(() => {
     playSound("tap");
@@ -59,9 +73,10 @@ export default function SplashPage() {
       <div className="flex flex-col items-center gap-[var(--space-5)]">
         <div className="flex items-start justify-center gap-[var(--space-4)]">
           <button
+            ref={mode1Ref}
             type="button"
             onClick={() => handleMode("1p")}
-            className="flex flex-col items-center justify-center cursor-pointer rounded-[var(--radius-button)] bg-[var(--c-magenta)] shadow-[0_2px_0_var(--c-magenta-dark)] hover:brightness-115 active:translate-y-[2px] active:shadow-[0_0_0_var(--c-magenta-dark)] transition-[transform,box-shadow,filter] duration-[80ms] ease-out"
+            className="flex flex-col items-center justify-center cursor-pointer rounded-[var(--radius-button)] bg-[var(--c-magenta)] shadow-[0_2px_0_var(--c-magenta-dark)]"
             style={{ width: 80, height: 80 }}
           >
             <span
@@ -79,9 +94,10 @@ export default function SplashPage() {
           </button>
 
           <button
+            ref={mode2Ref}
             type="button"
             onClick={() => handleMode("2p")}
-            className="flex flex-col items-center justify-center cursor-pointer rounded-[var(--radius-button)] bg-[var(--c-magenta)] shadow-[0_2px_0_var(--c-magenta-dark)] hover:brightness-115 active:translate-y-[2px] active:shadow-[0_0_0_var(--c-magenta-dark)] transition-[transform,box-shadow,filter] duration-[80ms] ease-out"
+            className="flex flex-col items-center justify-center cursor-pointer rounded-[var(--radius-button)] bg-[var(--c-magenta)] shadow-[0_2px_0_var(--c-magenta-dark)]"
             style={{ width: 80, height: 80 }}
           >
             <span

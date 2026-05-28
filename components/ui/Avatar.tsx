@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useGsapLift } from "@/lib/use-gsap-lift";
 
 interface AvatarProps {
   src: string;
@@ -17,6 +20,18 @@ export function Avatar({
 }: AvatarProps) {
   const isButton = !!onClick;
 
+  const { ref } = useGsapLift<HTMLButtonElement>({
+    y: 2,
+    scale: 1.04,
+    duration: 0.16,
+    ease: "power2.out",
+    settleDuration: 0.22,
+    settleEase: "power2.inOut",
+    liftShadow: "0 2px 6px rgba(42, 24, 16, 0.18)",
+    restShadow: "none",
+    enabled: isButton,
+  });
+
   const classes = [
     "inline-flex items-center justify-center",
     "rounded-full overflow-hidden",
@@ -29,8 +44,7 @@ export function Avatar({
       ? [
           "cursor-pointer",
           "hover:border-[var(--c-marigold)]",
-          "active:scale-[0.95]",
-          "transition-[transform,border-color,box-shadow] duration-100 ease-out",
+          "transition-[border-color,box-shadow] duration-100 ease-out",
           "focus-visible:outline-none focus-visible:shadow-[var(--shadow-focus)]",
         ].join(" ")
       : "",
@@ -50,6 +64,7 @@ export function Avatar({
   if (isButton) {
     return (
       <button
+        ref={ref}
         type="button"
         aria-label={`Select ${name}`}
         aria-pressed={selected}

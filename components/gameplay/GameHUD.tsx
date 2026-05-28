@@ -1,7 +1,7 @@
 "use client";
 
-import { useStore } from "zustand";
-import type { StoreApi } from "zustand";
+import { useStore } from "zustand/react";
+import type { StoreApi } from "zustand/vanilla";
 import type { GameStore } from "@/lib/engine/game-state";
 import { Avatar } from "@/components/ui/Avatar";
 import { IconButton } from "@/components/ui/IconButton";
