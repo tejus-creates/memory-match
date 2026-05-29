@@ -30,24 +30,37 @@ export type SoundType = "flip" | "match" | "mismatch" | "tap" | "chime" | "win";
 
 let ctx: AudioContext | null = null;
 let unlocked = false;
+/** resolves when ctx is guaranteed running (not suspended) */
+let resumeReady: Promise<void> = Promise.resolve();
 
 function getContext(): AudioContext {
   if (!ctx) {
     ctx = new AudioContext();
+    // Re-resume when the browser un-suspends the context (e.g. returning
+    // from a backgrounded tab on iOS Safari). Without this, the one-shot
+    // unlock listener is already gone and sounds silently fail.
+    ctx.addEventListener("statechange", () => {
+      if (ctx && ctx.state === "suspended" && unlocked) {
+        resumeReady = ctx.resume();
+      }
+    });
   }
   return ctx;
 }
 
 /**
- * Ensure the AudioContext is running. Called before every sound play.
- * Browsers suspend the context until a user gesture, and may re-suspend
- * it after inactivity. This handles both cases.
+ * Resume the AudioContext and return a promise that settles once it's
+ * actually running. Every sound-play path awaits this before scheduling
+ * Web Audio nodes, avoiding the frozen-currentTime bug where sounds
+ * are scheduled in the past on a still-suspended context.
  */
-function ensureContextResumed(): void {
+function resumeContext(): Promise<void> {
   const c = getContext();
   if (c.state === "suspended") {
-    c.resume();
+    resumeReady = c.resume();
+    return resumeReady;
   }
+  return resumeReady;
 }
 
 /**
@@ -60,7 +73,7 @@ export function initAudio(): void {
   if (unlocked) return;
 
   const unlock = () => {
-    ensureContextResumed();
+    resumeContext();
     unlocked = true;
     window.removeEventListener("click", unlock, true);
     window.removeEventListener("touchstart", unlock);
@@ -119,11 +132,11 @@ function playTone(
 ) {
   const c = getContext();
 
-  // If the context is suspended, resume it and retry after it's running.
+  // Always wait for context to be running before scheduling.
   // Scheduling on a suspended context uses a frozen currentTime (0),
   // so sounds end up in the past once the context actually resumes.
-  if (c.state === "suspended") {
-    c.resume().then(() => playTone(freq, duration, opts));
+  if (c.state !== "running") {
+    resumeContext().then(() => playTone(freq, duration, opts));
     return;
   }
 
@@ -151,8 +164,8 @@ function playTone(
 function playNoise(duration: number, volume: number = 0.3) {
   const c = getContext();
 
-  if (c.state === "suspended") {
-    c.resume().then(() => playNoise(duration, volume));
+  if (c.state !== "running") {
+    resumeContext().then(() => playNoise(duration, volume));
     return;
   }
 
@@ -235,12 +248,12 @@ const synthPlayers: Record<SoundType, () => void> = {
  */
 export function warmContext(): void {
   if (typeof window === "undefined") return;
-  ensureContextResumed();
+  resumeContext();
 }
 
 export function playSound(type: SoundType): void {
   if (typeof window === "undefined") return;
   if (loadMute()) return;
-  ensureContextResumed();
+  resumeContext();
   synthPlayers[type]();
 }
