@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.env.local
+.DS_Store
+*.tsbuildinfo
+node_modules
+
+# Theme assets copied to /public/ at build time (derived, not source)
+public/avatars/
+public/backgrounds/
+public/branding/
+public/cards/
+public/decks/
+public/favicon/
+public/sounds/
