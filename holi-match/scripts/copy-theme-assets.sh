@@ -31,6 +31,8 @@ fi
 # Only these are cleaned/copied — other files in /public/ are left alone.
 ASSET_DIRS="avatars backgrounds branding cards decks favicon sounds"
 
+mkdir -p "$PUBLIC_DIR"
+
 echo "Copying theme assets: $THEME → public/"
 
 for dir in $ASSET_DIRS; do
