@@ -8,6 +8,7 @@ import { SoundToggle } from "@/components/ui/SoundToggle";
 import { playSound } from "@/lib/sound";
 import { getSavedGame } from "@/lib/engine/storage";
 import { navigateForward } from "@/lib/navigation";
+import { assetPrefix } from "@/lib/asset-prefix";
 import { PageTransition } from "@/components/PageTransition";
 import { useGsapLift } from "@/lib/use-gsap-lift";
 
@@ -61,7 +62,7 @@ export default function SplashPage() {
       {/* ── Title graphic ── */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/branding/vibrant_holi_memories_title.webp"
+        src={assetPrefix("/branding/vibrant_holi_memories_title.webp")}
         alt="Vibrant Holi Memories"
         style={{ maxWidth: "min(600px, 85vw)", width: "100%", height: "auto" }}
       />
@@ -133,7 +134,7 @@ export default function SplashPage() {
       {/* Footer */}
       <footer className="flex flex-col items-center gap-[var(--space-3)] pt-[var(--space-6)]">
         <Image
-          src="/branding/HAFLogo2019_RGB_white.webp"
+          src={assetPrefix("/branding/HAFLogo2019_RGB_white.webp")}
           alt="Hindu American Foundation"
           width={140}
           height={40}

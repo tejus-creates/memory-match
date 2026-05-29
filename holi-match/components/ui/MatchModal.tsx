@@ -3,6 +3,7 @@
 import { Modal } from "@/components/ui/Modal";
 import { DisplayHeading } from "@/components/ui/DisplayHeading";
 import { Button } from "@/components/ui/Button";
+import { assetPrefix } from "@/lib/asset-prefix";
 
 interface MatchModalProps {
   isOpen: boolean;
@@ -52,7 +53,7 @@ export function MatchModal({
               }}
             >
               <img
-                src={image}
+                src={assetPrefix(image)}
                 alt={name}
                 className="h-full w-full object-cover"
               />
@@ -101,7 +102,7 @@ export function MatchModal({
             }}
           >
             <img
-              src={image}
+              src={assetPrefix(image)}
               alt={name}
               className="block h-full w-full object-contain"
             />

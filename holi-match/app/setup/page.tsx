@@ -10,6 +10,7 @@ import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { Input } from "@/components/ui/Input";
 import { Avatar } from "@/components/ui/Avatar";
 import { playSound } from "@/lib/sound";
+import { assetPrefix } from "@/lib/asset-prefix";
 import { SoundToggle } from "@/components/ui/SoundToggle";
 import { avatars } from "@/themes/holi/avatars";
 import {
@@ -182,7 +183,7 @@ function SetupContent() {
       <footer className="flex flex-col items-center gap-[var(--space-3)] pt-[var(--space-6)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/branding/HAFLogo2019_RGB_white.webp"
+          src={assetPrefix("/branding/HAFLogo2019_RGB_white.webp")}
           alt="Hindu American Foundation"
           className="h-[32px] w-auto opacity-70"
         />

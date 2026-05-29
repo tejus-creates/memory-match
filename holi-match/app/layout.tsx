@@ -4,6 +4,8 @@ import { theme } from "@/lib/engine/active-theme";
 import { AudioUnlock } from "@/components/AudioUnlock";
 import "./globals.css";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const alice = Alice({
   weight: "400",
   subsets: ["latin"],
@@ -81,6 +83,18 @@ export default function RootLayout({
         `}} />
       </head>
       <body className="min-h-full flex flex-col antialiased">
+        {/* Background layer — replaces body::before so the image path
+            can use the basePath prefix for GitHub Pages deployment. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: -1,
+            background: `linear-gradient(var(--bg-darken), var(--bg-darken)), linear-gradient(var(--bg-image-overlay), var(--bg-image-overlay)), url("${basePath}/backgrounds/holi-match-2-bkg1.webp") center / cover no-repeat`,
+            backgroundColor: "var(--bg-base)",
+          }}
+        />
         <AudioUnlock />
         {children}
       </body>

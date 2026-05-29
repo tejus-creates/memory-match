@@ -7,6 +7,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { Panel } from "@/components/ui/Panel";
 import { DisplayHeading } from "@/components/ui/DisplayHeading";
 import { playSound } from "@/lib/sound";
+import { assetPrefix } from "@/lib/asset-prefix";
 import { SoundToggle } from "@/components/ui/SoundToggle";
 import { copy } from "@/themes/holi/copy";
 import { getGamePrefs, saveGamePrefs } from "@/lib/engine/storage";
@@ -365,7 +366,7 @@ function DifficultyContent() {
       <footer className="flex flex-col items-center gap-[var(--space-3)] pt-[var(--space-6)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/branding/HAFLogo2019_RGB_white.webp"
+          src={assetPrefix("/branding/HAFLogo2019_RGB_white.webp")}
           alt="Hindu American Foundation"
           className="h-[32px] w-auto opacity-70"
         />

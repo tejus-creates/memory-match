@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useGsapLift } from "@/lib/use-gsap-lift";
+import { assetPrefix } from "@/lib/asset-prefix";
 
 interface AvatarProps {
   src: string;
@@ -52,7 +53,7 @@ export function Avatar({
 
   const content = (
     <Image
-      src={src}
+      src={assetPrefix(src)}
       alt={name}
       width={size}
       height={size}

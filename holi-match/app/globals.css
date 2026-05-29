@@ -116,20 +116,8 @@ body {
   line-height: 1.6;
 }
 
-/* Background image via fixed pseudo-element instead of background-attachment: fixed.
-   iOS Safari doesn't properly support background-attachment: fixed — it can
-   prevent touch events from reaching interactive elements. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(var(--bg-darken), var(--bg-darken)),
-    linear-gradient(var(--bg-image-overlay), var(--bg-image-overlay)),
-    url("/backgrounds/holi-match-2-bkg1.webp") center / cover no-repeat;
-  background-color: var(--bg-base);
-}
+/* Background image is rendered as a fixed <div> in layout.tsx so the
+   image path can include the basePath prefix for GitHub Pages. */
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);

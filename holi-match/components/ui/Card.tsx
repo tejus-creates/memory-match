@@ -27,6 +27,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import gsap from "gsap";
+import { assetPrefix } from "@/lib/asset-prefix";
 
 /*
  * Shadow interpolation for the hover tilt.
@@ -275,14 +276,14 @@ export function Card({
       <div style={innerStyle}>
         <div data-card-face className={border} style={backStyle}>
           <img
-            src={backImage}
+            src={assetPrefix(backImage)}
             alt=""
             className="h-full w-full object-cover"
           />
         </div>
         <div data-card-face className={border} style={frontStyle}>
           <img
-            src={frontImage}
+            src={assetPrefix(frontImage)}
             alt={name}
             className="h-full w-full object-contain"
           />
