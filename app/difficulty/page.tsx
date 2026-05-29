@@ -33,56 +33,9 @@ function getInitialLevel(): LevelKey {
   return "medium";
 }
 
-/* ─── Powder mound SVG clusters ─── */
+/* ─── Flame icons — progressive fire intensity ─── */
 
-const MOUND_COLORS = [
-  "var(--c-magenta)",
-  "var(--c-marigold)",
-  "var(--c-peacock)",
-  "var(--c-sindoor)",
-];
-
-/**
- * A single powder-mound dome path centered at (cx, cy).
- * hw = half-width, h = height of the dome.
- */
-function moundPath(cx: number, cy: number, hw: number, h: number): string {
-  return `M${cx - hw},${cy} Q${cx - hw},${cy - h} ${cx},${cy - h} Q${cx + hw},${cy - h} ${cx + hw},${cy} Z`;
-}
-
-/**
- * Mound layout configs within a 36×36 square viewBox.
- * Each layout fills the box as fully as possible while keeping
- * mounds proportional and the arrangement readable.
- */
-const MOUND_LAYOUTS: Record<
-  number,
-  { cx: number; cy: number; hw: number; h: number }[]
-> = {
-  // 1: single large mound, centered
-  1: [{ cx: 18, cy: 32, hw: 14, h: 22 }],
-  // 2: two side-by-side, filling the width
-  2: [
-    { cx: 10, cy: 32, hw: 9, h: 18 },
-    { cx: 26, cy: 32, hw: 9, h: 18 },
-  ],
-  // 3: pyramid — 2 top row, 1 centered below
-  3: [
-    { cx: 10, cy: 19, hw: 8, h: 14 },
-    { cx: 26, cy: 19, hw: 8, h: 14 },
-    { cx: 18, cy: 33, hw: 8, h: 14 },
-  ],
-  // 4: 2×2 grid
-  4: [
-    { cx: 10, cy: 19, hw: 8, h: 14 },
-    { cx: 26, cy: 19, hw: 8, h: 14 },
-    { cx: 10, cy: 33, hw: 8, h: 14 },
-    { cx: 26, cy: 33, hw: 8, h: 14 },
-  ],
-};
-
-function PowderMounds({ count }: { count: 1 | 2 | 3 | 4 }) {
-  const positions = MOUND_LAYOUTS[count];
+function FlameIcon({ level }: { level: LevelKey }) {
   return (
     <svg
       width="36"
@@ -92,24 +45,124 @@ function PowderMounds({ count }: { count: 1 | 2 | 3 | 4 }) {
       aria-hidden="true"
       className="flex-shrink-0"
     >
-      {positions.map((pos, i) => (
-        <path
-          key={i}
-          d={moundPath(pos.cx, pos.cy, pos.hw, pos.h)}
-          fill={MOUND_COLORS[i % MOUND_COLORS.length]}
-          opacity={0.85}
-        />
-      ))}
+      {level === "easy" && (
+        /* Small candle flame — narrow, gentle, sits low */
+        <>
+          <path
+            d="M18,14 C18,14 19.5,17 20.5,19 C22,21.5 22,24 20.5,26 C19.5,27.5 18,28 18,28 C18,28 16.5,27.5 15.5,26 C14,24 14,21.5 15.5,19 C16.5,17 18,14 18,14 Z"
+            fill="var(--c-marigold)"
+            opacity={0.9}
+          />
+          {/* Wick */}
+          <line x1="18" y1="28" x2="18" y2="32" stroke="var(--c-brass)" strokeWidth="1.5" strokeLinecap="round" />
+        </>
+      )}
+      {level === "medium" && (
+        /* Steady flame — taller, organic S-curve shape with inner core */
+        <>
+          <path
+            d="M18,8 C18,8 21,13 23,17 C25,21 25,25 22,28 C20,30 18,30.5 18,30.5 C18,30.5 16,30 14,28 C11,25 11,21 13,17 C15,13 18,8 18,8 Z"
+            fill="var(--c-sindoor)"
+            opacity={0.85}
+          />
+          <path
+            d="M18,16 C18,16 19.5,19 20,21 C20.5,23 20,25 19,26.5 C18.5,27 18,27 18,27 C18,27 17.5,27 17,26.5 C16,25 15.5,23 16,21 C16.5,19 18,16 18,16 Z"
+            fill="var(--c-marigold)"
+            opacity={0.9}
+          />
+        </>
+      )}
+      {level === "hard" && (
+        /* Tall fire — wider base, flickering tips, inner glow */
+        <>
+          {/* Main body */}
+          <path
+            d="M18,4 C18,4 22,10 25,16 C28,22 27,27 23,30 C21,31.5 18,32 18,32 C18,32 15,31.5 13,30 C9,27 8,22 11,16 C14,10 18,4 18,4 Z"
+            fill="var(--c-magenta)"
+            opacity={0.85}
+          />
+          {/* Left flicker */}
+          <path
+            d="M13,16 C13,16 10,12 9.5,9 C8,12 9,16 12,18"
+            fill="var(--c-sindoor)"
+            opacity={0.8}
+          />
+          {/* Right flicker */}
+          <path
+            d="M23,16 C23,16 26,12 26.5,9 C28,12 27,16 24,18"
+            fill="var(--c-sindoor)"
+            opacity={0.8}
+          />
+          {/* Inner core */}
+          <path
+            d="M18,14 C18,14 20,18 21,21 C22,24 21,27 19.5,28.5 C19,29 18,29 18,29 C18,29 17,29 16.5,28.5 C15,27 14,24 15,21 C16,18 18,14 18,14 Z"
+            fill="var(--c-marigold)"
+            opacity={0.9}
+          />
+        </>
+      )}
+      {level === "expert" && (
+        /* Blazing bonfire — wild, asymmetric, chaotic flames */
+        <>
+          {/* Wide ragged base — irregular edge */}
+          <path
+            d="M18,6 C20,10 26,14 29,20 C31,25 29,30 25,33 C22,34.5 14,34.5 11,33 C7,30 5,25 7,20 C10,14 16,10 18,6 Z"
+            fill="var(--c-magenta)"
+            opacity={0.85}
+          />
+          {/* Tall left tongue — leans outward */}
+          <path
+            d="M11,17 C10,14 7,8 4,3 C3,8 4,14 8,19 C9,20 11,19 11,17 Z"
+            fill="var(--c-sindoor)"
+            opacity={0.85}
+          />
+          {/* Short left tongue — lower, wider */}
+          <path
+            d="M9,22 C7,19 4,15 3,12 C2,16 3,21 7,24 C8,24.5 9,23.5 9,22 Z"
+            fill="var(--c-magenta)"
+            opacity={0.7}
+          />
+          {/* Tall right tongue — leaning right, tallest */}
+          <path
+            d="M25,14 C27,10 29,5 31,1 C33,7 32,13 28,18 C27,19 25,17 25,14 Z"
+            fill="var(--c-sindoor)"
+            opacity={0.85}
+          />
+          {/* Mid right tongue */}
+          <path
+            d="M27,20 C29,16 31,11 33,8 C34,13 33,19 29,23 C28,24 27,22 27,20 Z"
+            fill="var(--c-magenta)"
+            opacity={0.7}
+          />
+          {/* Center spike — slightly off-center left */}
+          <path
+            d="M15,12 C14,8 13,4 12,1 C11,5 12,10 15,14 Z"
+            fill="var(--c-sindoor)"
+            opacity={0.75}
+          />
+          {/* Inner blaze */}
+          <path
+            d="M18,14 C20,18 23,22 23,26 C23,29 21,31 18,31 C15,31 13,29 13,26 C13,22 16,18 18,14 Z"
+            fill="var(--c-sindoor)"
+            opacity={0.85}
+          />
+          {/* Hot core */}
+          <path
+            d="M18,21 C19,23 20,25 20,27 C20,28.5 19,29.5 18,29.5 C17,29.5 16,28.5 16,27 C16,25 17,23 18,21 Z"
+            fill="var(--c-marigold)"
+            opacity={0.95}
+          />
+          {/* Embers / sparks */}
+          <circle cx="8" cy="8" r="1" fill="var(--c-marigold)" opacity={0.7} />
+          <circle cx="28" cy="5" r="1.2" fill="var(--c-sindoor)" opacity={0.6} />
+          <circle cx="22" cy="3" r="0.8" fill="var(--c-marigold)" opacity={0.8} />
+          <circle cx="5" cy="14" r="0.8" fill="var(--c-marigold)" opacity={0.5} />
+          <circle cx="32" cy="12" r="1" fill="var(--c-sindoor)" opacity={0.5} />
+        </>
+      )}
     </svg>
   );
 }
-
-const LEVEL_MOUND_COUNT: Record<LevelKey, 1 | 2 | 3 | 4> = {
-  easy: 1,
-  medium: 2,
-  hard: 3,
-  expert: 4,
-};
 
 /* ─── Difficulty option with GSAP lift ─── */
 
@@ -239,8 +292,8 @@ function DifficultyContent() {
                 onClick={() => handleSelect(key)}
               >
                 <div className="flex items-center gap-[var(--space-3)]">
-                  {/* Left: mound icon */}
-                  <PowderMounds count={LEVEL_MOUND_COUNT[key]} />
+                  {/* Left: flame icon */}
+                  <FlameIcon level={key} />
 
                   {/* Middle: label + description */}
                   <div className="flex flex-col gap-[var(--space-1)] flex-1 min-w-0">
