@@ -119,7 +119,7 @@ export default function SplashPage() {
         {hasSavedGame && (
           <Button
             variant="secondary"
-            className="!text-[var(--c-parchment)] !border-[rgba(244,232,208,0.8)] hover:!bg-[rgba(244,232,208,0.08)]"
+            className=""
             onClick={handleContinue}
           >
             Continue last game

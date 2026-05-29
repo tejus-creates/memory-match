@@ -12,11 +12,11 @@ interface PauseModalProps {
 
 export function PauseModal({ isOpen, onResume, onRestart, onQuit }: PauseModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onResume} ariaLabel="Game paused" maxWidth={360}>
+    <Modal isOpen={isOpen} onClose={onResume} ariaLabel="Game paused" maxWidth={360} variant="frosted">
       <div className="flex flex-col items-center gap-5">
         <h2
           className="font-display text-lg"
-          style={{ color: "var(--text-primary-dark)" }}
+          style={{ color: "var(--c-parchment)" }}
         >
           Game Paused
         </h2>
@@ -25,10 +25,18 @@ export function PauseModal({ isOpen, onResume, onRestart, onQuit }: PauseModalPr
           <Button variant="primary" onClick={onResume} className="w-full">
             Resume
           </Button>
-          <Button variant="secondary" onClick={onRestart} className="w-full">
+          <Button
+            variant="secondary"
+            onClick={onRestart}
+            className="w-full"
+          >
             Restart
           </Button>
-          <Button variant="secondary" onClick={onQuit} className="w-full">
+          <Button
+            variant="secondary"
+            onClick={onQuit}
+            className="w-full"
+          >
             Quit to Menu
           </Button>
         </div>

@@ -32,17 +32,20 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div
       className="flex flex-col items-center gap-1 rounded-[var(--radius-button)] px-3 py-2"
-      style={{ backgroundColor: "rgba(42, 24, 16, 0.06)" }}
+      style={{
+        backgroundColor: "rgba(244, 232, 208, 0.14)",
+        border: "1.5px solid rgba(184, 150, 106, 0.45)",
+      }}
     >
       <span
         className="font-display text-lg tabular-nums"
-        style={{ color: "var(--c-ink)" }}
+        style={{ color: "var(--c-parchment)" }}
       >
         {value}
       </span>
       <span
         className="font-body text-xs"
-        style={{ color: "var(--text-secondary-dark)" }}
+        style={{ color: "var(--text-secondary-light)" }}
       >
         {label}
       </span>
@@ -73,10 +76,12 @@ export function ResultsModal({
   const matchedPairs = board.filter((c) => c.isMatched).length / 2;
   const accuracy = flips > 0 ? `${Math.round((matchedPairs * 2) / flips * 100)}%` : "—";
 
+  const secondaryBtnClass = "w-full";
+
   /* ── Step 2: CTA ── */
   if (step === 2) {
     return (
-      <Modal isOpen={isOpen} onClose={onPlayAgain} ariaLabel="Learn about Holi" maxWidth={400}>
+      <Modal isOpen={isOpen} onClose={onPlayAgain} ariaLabel="Learn about Holi" maxWidth={400} variant="frosted">
         <div className="flex flex-col items-center gap-5 text-center">
           {/* Placeholder for HAF Holi Toolkit graphic */}
           <div
@@ -84,13 +89,13 @@ export function ResultsModal({
             style={{
               width: 200,
               height: 200,
-              backgroundColor: "var(--surface-parchment)",
-              border: "1.5px solid var(--c-brass)",
+              backgroundColor: "rgba(244, 232, 208, 0.14)",
+              border: "1.5px solid rgba(184, 150, 106, 0.45)",
             }}
           >
             <span
               className="font-display text-sm px-4"
-              style={{ color: "var(--text-secondary-dark)" }}
+              style={{ color: "var(--text-secondary-light)" }}
             >
               HAF Holi Toolkit
             </span>
@@ -107,10 +112,10 @@ export function ResultsModal({
 
           {/* Navigation */}
           <div className="flex flex-col gap-3 w-full max-w-[280px]">
-            <Button variant="secondary" onClick={onPlayAgain} className="w-full">
+            <Button variant="secondary" onClick={onPlayAgain} className={secondaryBtnClass}>
               {copy.results.playAgain}
             </Button>
-            <Button variant="secondary" onClick={onMainMenu} className="w-full">
+            <Button variant="secondary" onClick={onMainMenu} className={secondaryBtnClass}>
               {copy.results.backToMenu}
             </Button>
           </div>
@@ -128,16 +133,16 @@ export function ResultsModal({
     const winnerAvatar = winner ? avatarMap.get(winner.avatarId) : null;
 
     return (
-      <Modal isOpen={isOpen} onClose={() => setStep(2)} ariaLabel="Game results" maxWidth={480}>
+      <Modal isOpen={isOpen} onClose={() => setStep(2)} ariaLabel="Game results" maxWidth={480} variant="frosted">
         <div className="flex flex-col items-center gap-5 text-center">
-          <EyebrowLabel color="sindoor">{copy.results.gameOver}</EyebrowLabel>
+          <EyebrowLabel color="marigold">{copy.results.gameOver}</EyebrowLabel>
 
           {/* Winner banner */}
           <div className="flex items-center gap-3">
             {winnerAvatar && !isTie && (
               <Avatar src={winnerAvatar.image} name={winnerAvatar.name} size={48} />
             )}
-            <DisplayHeading size="lg">
+            <DisplayHeading size="lg" color="parchment">
               {isTie
                 ? copy.results.tieBanner
                 : copy.results.winnerBanner.replace("{name}", winner?.name ?? "Player")}
@@ -156,22 +161,22 @@ export function ResultsModal({
                   style={{
                     border: isWinner
                       ? "2px solid var(--c-marigold)"
-                      : "1.5px solid var(--border-thin)",
+                      : "1.5px solid rgba(184, 150, 106, 0.45)",
                     backgroundColor: isWinner
-                      ? "rgba(216, 154, 44, 0.08)"
-                      : "transparent",
+                      ? "rgba(216, 154, 44, 0.18)"
+                      : "rgba(244, 232, 208, 0.14)",
                   }}
                 >
                   {av && <Avatar src={av.image} name={av.name} size={40} />}
                   <span
                     className="font-display text-sm"
-                    style={{ color: "var(--c-ink)" }}
+                    style={{ color: "var(--c-parchment)" }}
                   >
                     {player.name}
                   </span>
                   <span
                     className="font-display text-xl"
-                    style={{ color: isWinner ? "var(--c-marigold)" : "var(--c-ink)" }}
+                    style={{ color: isWinner ? "var(--c-marigold)" : "var(--c-parchment)" }}
                   >
                     {player.score}
                   </span>
@@ -197,11 +202,11 @@ export function ResultsModal({
 
   /* ── Step 1: Stats (1P) ── */
   return (
-    <Modal isOpen={isOpen} onClose={() => setStep(2)} ariaLabel="Game results" maxWidth={440}>
+    <Modal isOpen={isOpen} onClose={() => setStep(2)} ariaLabel="Game results" maxWidth={440} variant="frosted">
       <div className="flex flex-col items-center gap-5 text-center">
-        <EyebrowLabel color="sindoor">{copy.results.gameComplete}</EyebrowLabel>
+        <EyebrowLabel color="marigold">{copy.results.gameComplete}</EyebrowLabel>
 
-        <DisplayHeading size="lg" underline>
+        <DisplayHeading size="lg" underline color="parchment">
           {copy.results.heading}
         </DisplayHeading>
 

@@ -10,6 +10,8 @@ interface DisplayHeadingProps extends HTMLAttributes<HTMLHeadingElement> {
   size: keyof typeof sizeMap;
   underline?: boolean;
   as?: ElementType;
+  /** Text color. Defaults to "ink" (dark). Use "parchment" on dark/frosted surfaces. */
+  color?: "ink" | "parchment";
   children: React.ReactNode;
 }
 
@@ -17,14 +19,19 @@ export function DisplayHeading({
   size,
   underline = false,
   as: Tag = "h2",
+  color = "ink",
   children,
   className = "",
   ...rest
 }: DisplayHeadingProps) {
+  const colorClass = color === "parchment"
+    ? "text-[var(--c-parchment)]"
+    : "text-[var(--c-ink)]";
+
   return (
     <div>
       <Tag
-        className={`font-display leading-[1.2] text-[var(--c-ink)] ${sizeMap[size]} ${className}`}
+        className={`font-display leading-[1.2] ${colorClass} ${sizeMap[size]} ${className}`}
         {...rest}
       >
         {children}

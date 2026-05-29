@@ -223,7 +223,7 @@ function DifficultyContent() {
         elevated
       >
         {/* Heading */}
-        <DisplayHeading size="lg">
+        <DisplayHeading size="lg" color="parchment">
           {copy.difficulty.heading}
         </DisplayHeading>
 

@@ -79,11 +79,11 @@ function MobileMenuModal({
   timer: number;
 }) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} ariaLabel="Game menu" maxWidth={360}>
+    <Modal isOpen={isOpen} onClose={onClose} ariaLabel="Game menu" maxWidth={360} variant="frosted">
       <div className="flex flex-col items-center gap-4">
         <h2
           className="font-display text-lg"
-          style={{ color: "var(--text-primary-dark)" }}
+          style={{ color: "var(--c-parchment)" }}
         >
           {copy.pauseModal.heading}
         </h2>
@@ -98,7 +98,7 @@ function MobileMenuModal({
                 <div key={player.id} className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
                     <Avatar src={av?.image ?? "/avatars/avatars_0002_flame.webp"} name={av?.name ?? player.name} size={28} />
-                    <span className="font-display text-sm" style={{ color: "var(--text-primary-dark)" }}>
+                    <span className="font-display text-sm" style={{ color: "var(--c-parchment)" }}>
                       {player.name}
                     </span>
                     <span className="font-body text-sm font-bold tabular-nums ml-auto" style={{ color: "var(--c-marigold)" }}>
@@ -112,19 +112,19 @@ function MobileMenuModal({
               className="grid grid-cols-2 gap-x-4 gap-y-1 pt-2"
               style={{ borderTop: "1px solid var(--border-thin)" }}
             >
-              <StatRowDark label={copy.gameplay.timeLabel} value={formatTime(timer)} />
-              <StatRowDark label={copy.gameplay.turnLabel} value={String(flips)} />
-              <StatRowDark label={copy.gameplay.accuracyLabel} value={accuracy} />
+              <StatRow label={copy.gameplay.timeLabel} value={formatTime(timer)} />
+              <StatRow label={copy.gameplay.turnLabel} value={String(flips)} />
+              <StatRow label={copy.gameplay.accuracyLabel} value={accuracy} />
             </div>
           </div>
         ) : (
           /* 1P: all stats */
           <div className="w-full grid grid-cols-2 gap-x-4 gap-y-1">
-            <StatRowDark label={copy.gameplay.accuracyLabel} value={accuracy} />
-            <StatRowDark label={copy.gameplay.streakLabel} value={String(streak)} />
-            <StatRowDark label={copy.gameplay.bestStreakLabel} value={String(bestStreak)} />
-            <StatRowDark label={copy.gameplay.turnLabel} value={String(flips)} />
-            <StatRowDark label={copy.gameplay.timeLabel} value={formatTime(timer)} />
+            <StatRow label={copy.gameplay.accuracyLabel} value={accuracy} />
+            <StatRow label={copy.gameplay.streakLabel} value={String(streak)} />
+            <StatRow label={copy.gameplay.bestStreakLabel} value={String(bestStreak)} />
+            <StatRow label={copy.gameplay.turnLabel} value={String(flips)} />
+            <StatRow label={copy.gameplay.timeLabel} value={formatTime(timer)} />
           </div>
         )}
 
@@ -133,28 +133,23 @@ function MobileMenuModal({
           <Button variant="primary" onClick={onClose} className="w-full">
             {copy.pauseModal.resumeButton}
           </Button>
-          <Button variant="secondary" onClick={() => { onRestart(); onClose(); }} className="w-full">
+          <Button
+            variant="secondary"
+            onClick={() => { onRestart(); onClose(); }}
+            className="w-full"
+          >
             Restart
           </Button>
-          <Button variant="secondary" onClick={() => { onQuit(); onClose(); }} className="w-full">
+          <Button
+            variant="secondary"
+            onClick={() => { onQuit(); onClose(); }}
+            className="w-full"
+          >
             {copy.pauseModal.quitButton}
           </Button>
         </div>
       </div>
     </Modal>
-  );
-}
-
-function StatRowDark({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="font-body text-xs" style={{ color: "var(--text-secondary-dark)" }}>
-        {label}
-      </span>
-      <span className="font-body text-sm tabular-nums" style={{ color: "var(--text-primary-dark)" }}>
-        {value}
-      </span>
-    </div>
   );
 }
 
@@ -247,15 +242,16 @@ export function GameHUD({ store, onPause, onRestart, onQuit, mode }: GameHUDProp
 
   const barStyle = {
     height: 68,
-    background: "rgba(42, 24, 16, 0.55)",
-    borderBottom: "1px solid var(--border-thin)",
+    background: "rgba(42, 24, 16, 0.4)",
+    borderBottom: "0.5px solid rgba(244, 232, 208, 0.25)",
   };
+  const barClassName = "backdrop-blur-[4px]";
 
   /* ── 1P MODE ── */
   if (mode === "1p") {
     return (
       <div className="shrink-0 relative">
-        <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6" style={barStyle}>
+        <div className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-6 ${barClassName}`} style={barStyle}>
           {/* Player info */}
           <div className="flex items-center gap-2 shrink-0">
             {avatarData && (
@@ -320,7 +316,7 @@ export function GameHUD({ store, onPause, onRestart, onQuit, mode }: GameHUDProp
   /* ── 2P MODE — single top bar: Player 1 | controls | Player 2 ── */
   return (
     <div className="shrink-0 relative">
-      <div className="relative flex items-center justify-between px-4 sm:px-6" style={barStyle}>
+      <div className={`relative flex items-center justify-between px-4 sm:px-6 ${barClassName}`} style={barStyle}>
         {/* Player 1 — left */}
         <div className="shrink-0">
           {players[0] && (

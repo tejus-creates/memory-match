@@ -108,7 +108,7 @@ function SetupContent() {
         <EyebrowLabel color="marigold">{stepLabel}</EyebrowLabel>
 
         {/* Heading */}
-        <DisplayHeading size="lg">
+        <DisplayHeading size="lg" color="parchment">
           Pick a name and avatar
         </DisplayHeading>
 

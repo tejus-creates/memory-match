@@ -12,6 +12,8 @@ interface ModalProps {
   maxWidth?: number;
   width?: string;
   shadow?: string;
+  /** "parchment" = solid cream panel (default). "frosted" = dark semi-transparent with backdrop blur, matching start screens. */
+  variant?: "parchment" | "frosted";
 }
 
 export function Modal({
@@ -23,7 +25,9 @@ export function Modal({
   maxWidth = 480,
   width = "90vw",
   shadow,
+  variant = "parchment",
 }: ModalProps) {
+  const isFrosted = variant === "frosted";
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -120,6 +124,7 @@ export function Modal({
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
+      className={isFrosted ? "backdrop-blur-[12px]" : ""}
       style={{
         position: "fixed",
         inset: 0,
@@ -127,7 +132,9 @@ export function Modal({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "rgba(42, 24, 16, 0.6)",
+        backgroundColor: isFrosted
+          ? "rgba(42, 24, 16, 0.45)"
+          : "rgba(42, 24, 16, 0.6)",
         opacity: visible ? 1 : 0,
         transition: "opacity 200ms ease-out",
       }}
@@ -138,15 +145,24 @@ export function Modal({
       <div
         ref={panelRef}
         tabIndex={-1}
+        className={isFrosted ? "backdrop-blur-[4px] sm:!p-[var(--space-8)]" : ""}
         style={{
           width,
           maxWidth,
           borderRadius: "var(--radius-modal)",
-          border: "0.5px solid var(--c-ink)",
-          backgroundColor: "var(--surface-parchment)",
+          border: isFrosted
+            ? "0.5px solid rgba(244, 232, 208, 0.25)"
+            : "0.5px solid var(--c-ink)",
+          backgroundColor: isFrosted
+            ? "rgba(42, 24, 16, 0.4)"
+            : "var(--surface-parchment)",
           padding: "var(--space-6)",
-          boxShadow: shadow ?? "var(--shadow-modal)",
-          color: "var(--text-primary-dark)",
+          boxShadow: shadow ?? (isFrosted
+            ? "0 6px 20px rgba(42, 24, 16, 0.3)"
+            : "var(--shadow-modal)"),
+          color: isFrosted
+            ? "var(--text-primary-light)"
+            : "var(--text-primary-dark)",
           outline: "none",
           opacity: visible ? 1 : 0,
           transform: visible ? "scale(1) translateY(0)" : "scale(0.95) translateY(8px)",

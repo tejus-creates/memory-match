@@ -494,11 +494,11 @@ function PlayContent() {
     return (
       <main className="relative flex h-dvh flex-col overflow-hidden">
         <div
-          className="shrink-0"
+          className="shrink-0 backdrop-blur-[4px]"
           style={{
             height: 68,
-            background: "rgba(42, 24, 16, 0.55)",
-            borderBottom: "1px solid var(--border-thin)",
+            background: "rgba(42, 24, 16, 0.4)",
+            borderBottom: "0.5px solid rgba(244, 232, 208, 0.25)",
           }}
         />
         <div className="flex flex-1 items-center justify-center">

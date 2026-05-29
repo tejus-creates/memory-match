@@ -130,6 +130,24 @@ function CarouselArrow({
   );
 }
 
+/* ─── Extended deck array with clones for continuous scrolling ─── */
+
+// [clone of last, ...real decks, clone of first]
+const extendedDecks = [
+  decks[decks.length - 1],
+  ...decks,
+  decks[0],
+];
+// Real items live at indices 1..decks.length in extendedDecks.
+// Clone of last = index 0, clone of first = index decks.length + 1.
+
+/** Convert a scroll index (in extendedDecks) to a real deck index (in decks). */
+function toRealIndex(scrollIndex: number): number {
+  if (scrollIndex <= 0) return decks.length - 1;
+  if (scrollIndex > decks.length) return 0;
+  return scrollIndex - 1;
+}
+
 /* ─── Component ─── */
 
 function DeckContent() {
@@ -138,8 +156,12 @@ function DeckContent() {
   const mode = (searchParams.get("mode") as GameMode) || "1p";
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  // scrollIndex tracks position in extendedDecks (1-based for real items)
+  const [scrollIndex, setScrollIndex] = useState(1);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const isSnappingRef = useRef(false);
+
+  const activeIndex = toRealIndex(scrollIndex);
 
   // Detect prefers-reduced-motion
   useEffect(() => {
@@ -153,28 +175,70 @@ function DeckContent() {
 
   // Set initial index from saved prefs + scroll to it
   useEffect(() => {
-    const idx = getInitialIndex();
-    setActiveIndex(idx);
+    const realIdx = getInitialIndex();
+    const si = realIdx + 1; // offset for leading clone
+    setScrollIndex(si);
     requestAnimationFrame(() => {
       const el = scrollRef.current;
       if (!el) return;
-      const child = el.children[idx] as HTMLElement | undefined;
+      const child = el.children[si] as HTMLElement | undefined;
       if (child) {
         el.scrollLeft = centerOffset(el, child);
       }
     });
   }, []);
 
-  // Scroll listener — sync activeIndex to whichever card is centered.
-  // Uses getBoundingClientRect (viewport-relative) to avoid offsetLeft/offsetParent
-  // ambiguity that can cause two items to appear equidistant from center.
+  // Snap from clone to real item when scroll settles on a clone
+  const snapIfClone = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || isSnappingRef.current) return;
+
+    // If on clone of last (index 0), jump to real last (index decks.length)
+    if (scrollIndex === 0) {
+      isSnappingRef.current = true;
+      const target = decks.length;
+      const child = el.children[target] as HTMLElement | undefined;
+      if (child) {
+        el.style.scrollSnapType = "none";
+        el.style.scrollBehavior = "auto";
+        el.scrollLeft = centerOffset(el, child);
+        el.style.scrollBehavior = "";
+        el.style.scrollSnapType = "x mandatory";
+      }
+      setScrollIndex(target);
+      requestAnimationFrame(() => { isSnappingRef.current = false; });
+    }
+    // If on clone of first (index decks.length + 1), jump to real first (index 1)
+    else if (scrollIndex === decks.length + 1) {
+      isSnappingRef.current = true;
+      const target = 1;
+      const child = el.children[target] as HTMLElement | undefined;
+      if (child) {
+        el.style.scrollSnapType = "none";
+        el.style.scrollBehavior = "auto";
+        el.scrollLeft = centerOffset(el, child);
+        el.style.scrollBehavior = "";
+        el.style.scrollSnapType = "x mandatory";
+      }
+      setScrollIndex(target);
+      requestAnimationFrame(() => { isSnappingRef.current = false; });
+    }
+  }, [scrollIndex]);
+
+  // Trigger clone-snap after scroll settles
+  useEffect(() => {
+    const id = setTimeout(snapIfClone, 80);
+    return () => clearTimeout(id);
+  }, [snapIfClone]);
+
+  // Scroll listener — sync scrollIndex to whichever card is centered.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
 
     let ticking = false;
     const onScroll = () => {
-      if (ticking) return;
+      if (ticking || isSnappingRef.current) return;
       ticking = true;
       requestAnimationFrame(() => {
         ticking = false;
@@ -191,7 +255,7 @@ function DeckContent() {
             closest = i;
           }
         }
-        setActiveIndex(closest);
+        setScrollIndex(closest);
       });
     };
 
@@ -245,11 +309,11 @@ function DeckContent() {
     };
   }, []);
 
-  const scrollToIndex = useCallback(
-    (index: number) => {
+  const scrollToScrollIndex = useCallback(
+    (si: number) => {
       const el = scrollRef.current;
       if (!el) return;
-      const child = el.children[index] as HTMLElement | undefined;
+      const child = el.children[si] as HTMLElement | undefined;
       if (!child) return;
       // Temporarily disable scroll-snap so our animation isn't fighting it
       el.style.scrollSnapType = "none";
@@ -267,20 +331,21 @@ function DeckContent() {
 
   const handlePrev = useCallback(() => {
     playSound("tap");
-    scrollToIndex((activeIndex - 1 + decks.length) % decks.length);
-  }, [activeIndex, scrollToIndex]);
+    // scrollIndex is in extendedDecks space; just go left by 1
+    scrollToScrollIndex(scrollIndex - 1);
+  }, [scrollIndex, scrollToScrollIndex]);
 
   const handleNext = useCallback(() => {
     playSound("tap");
-    scrollToIndex((activeIndex + 1) % decks.length);
-  }, [activeIndex, scrollToIndex]);
+    scrollToScrollIndex(scrollIndex + 1);
+  }, [scrollIndex, scrollToScrollIndex]);
 
   const handleDotClick = useCallback(
-    (index: number) => {
+    (realIndex: number) => {
       playSound("tap");
-      scrollToIndex(index);
+      scrollToScrollIndex(realIndex + 1); // +1 for leading clone offset
     },
-    [scrollToIndex]
+    [scrollToScrollIndex]
   );
 
   const handleContinue = useCallback(() => {
@@ -327,7 +392,7 @@ function DeckContent() {
         elevated
       >
           {/* Heading */}
-          <DisplayHeading size="lg">
+          <DisplayHeading size="lg" color="parchment">
             Choose your deck
           </DisplayHeading>
 
@@ -388,28 +453,34 @@ function DeckContent() {
                     : undefined,
                 }}
               >
-                {decks.map((deck, i) => {
-                  const isActive = i === activeIndex;
+                {extendedDecks.map((deck, i) => {
+                  const isActive = i === scrollIndex;
                   return (
                     <div
-                      key={deck.id}
+                      key={`${deck.id}-${i}`}
                       className="flex-shrink-0"
                       style={{
                         width: "80%",
                         scrollSnapAlign: "center",
-                        paddingLeft: i === 0 ? 0 : 6,
-                        paddingRight: i === decks.length - 1 ? 0 : 6,
+                        paddingLeft: 6,
+                        paddingRight: 6,
                         opacity: isActive ? 1 : 0.4,
-                        transition: "opacity 250ms ease-out, box-shadow 250ms ease-out",
+                        transition: "opacity 250ms ease-out",
                       }}
                     >
                       <div
                         className="w-full overflow-hidden rounded-[var(--radius-card)]"
                         style={{
+                          border: isActive
+                            ? "2px solid var(--c-marigold)"
+                            : "2px solid transparent",
+                          backgroundColor: isActive
+                            ? "rgba(216, 154, 44, 0.18)"
+                            : "transparent",
                           boxShadow: isActive
                             ? "0 8px 24px rgba(42, 24, 16, 0.4)"
                             : "none",
-                          transition: "box-shadow 250ms ease-out",
+                          transition: "border-color 250ms ease-out, background-color 250ms ease-out, box-shadow 250ms ease-out",
                         }}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
