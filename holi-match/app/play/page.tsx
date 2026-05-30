@@ -27,6 +27,7 @@ import {
 import { decks } from "@/themes/holi/decks";
 import { cards as cardPool } from "@/themes/holi/cards";
 import { playSound, warmContext } from "@/lib/sound";
+import { assetPrefix } from "@/lib/asset-prefix";
 
 /* ─── Fixed grid structures per orientation ─── */
 
@@ -521,18 +522,19 @@ function PlayContent() {
       {/* TEMPORARY: card-count test buttons */}
       <div className="absolute top-[62px] right-2 z-40 flex gap-1.5">
         {VALID_PAIRS.map((p) => (
-          <a
+          <button
             key={p}
-            href={`/play?pairs=${p}`}
+            type="button"
+            onClick={() => router.push(`/play?pairs=${p}`)}
             className={[
-              "rounded px-2 py-1 font-[var(--font-body)] text-xs transition-colors",
+              "rounded px-2 py-1 font-[var(--font-body)] text-xs transition-colors cursor-pointer",
               p === pairs
                 ? "bg-[var(--c-marigold)] text-[var(--c-ink)]"
                 : "bg-[var(--surface-overlay)] text-[var(--text-primary-light)] hover:bg-[var(--c-marigold)]/30",
             ].join(" ")}
           >
             {p * 2}
-          </a>
+          </button>
         ))}
       </div>
 
